@@ -948,13 +948,13 @@ function makeStatusFanSVG(statusText, colorMode) {
         text-anchor="middle" dominant-baseline="middle"
         font-family="'Sawarabi Mincho', serif"
         font-size="9" fill="rgba(255,255,255,0.95)"
-        letter-spacing="3">'+t('battleLabel')+'</text>
+        letter-spacing="3">${t('battleLabel')}</text>
       <text x="${PX}" y="${ty}"
         text-anchor="middle" dominant-baseline="middle"
         font-family="'Sawarabi Mincho', serif"
         font-size="${fs}" fill="rgba(255,255,255,0.95)" filter="url(#ts)">${statusText}</text>
     </svg>
-    <div class="rank-badge-caption" style="background:rgba(0,0,0,0.55);padding:2px 8px;border-radius:3px;">"+t('statusBoost')+"</div>`;
+    <div class="rank-badge-caption" style="background:rgba(0,0,0,0.55);padding:2px 8px;border-radius:3px;">${t('statusBoost')}</div>`;
 }
 
 function makeRankFanSVG(rank) {
@@ -1001,7 +1001,7 @@ function makeRankFanSVG(rank) {
         text-anchor="middle" dominant-baseline="middle"
         font-family="'Sawarabi Mincho', serif"
         font-size="9" fill="rgba(255,255,255,0.95)"
-        letter-spacing="3">'+t('battleLabel')+'</text>
+        letter-spacing="3">${t('battleLabel')}</text>
       <text x="${PX}" y="${ty}"
         text-anchor="middle" dominant-baseline="middle"
         font-family="'Sawarabi Mincho', serif"
