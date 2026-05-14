@@ -1730,15 +1730,23 @@ function updateCardScale() {
     const isMobile = window.innerWidth <= 760;
     // モバイルはドロワーが fixed になるので viewport 幅から余白を引いた値を使う
     const maxW = Math.min(640, isMobile ? window.innerWidth - 24 : window.innerWidth - 48);
-    if (maxW < 640) {
-        const scale = maxW / 640;
-        wrapper.style.width  = maxW + 'px';
-        wrapper.style.height = Math.round(maxW * W_H / W_W) + 'px';  // 縦長（4:5）
+    // PC の場合は高さ基準でもスケールダウンして、シェアボタンまで1画面に収める
+    // site-title + body padding + github-area + share-btn 等の概算余白
+    const RESERVED_H = 260;
+    const maxWByH = !isMobile
+        ? Math.round((window.innerHeight - RESERVED_H) * W_W / W_H)
+        : Infinity;
+    const targetW = Math.min(maxW, maxWByH);
+
+    if (targetW < 640) {
+        const scale = targetW / 640;
+        wrapper.style.width  = targetW + 'px';
+        wrapper.style.height = Math.round(targetW * W_H / W_W) + 'px';  // 縦長（4:5）
         wrapper.style.overflow = 'hidden';
         card.style.transformOrigin = 'top left';
         card.style.transform = `scale(${scale})`;
-        btns.style.width = maxW + 'px';
-        if (githubArea) githubArea.style.width = maxW + 'px';
+        btns.style.width = targetW + 'px';
+        if (githubArea) githubArea.style.width = targetW + 'px';
     } else {
         wrapper.style.width = wrapper.style.height = wrapper.style.overflow = '';
         card.style.transform = '';
