@@ -264,10 +264,10 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            padding: 8px 32px;
-            font-size: 1.15rem;
+            padding: 12px 36px;
+            font-size: 1.28rem;
             font-family: 'Sawarabi Mincho', serif;
-            line-height: 1.5;
+            line-height: 1.65;
             color: var(--ink);
             text-align: center;
             word-break: auto-phrase;
@@ -275,12 +275,12 @@
             background: rgba(235,224,176,0.72);
             border-radius: 4px;
             margin-top: 4px;
-            min-height: 58px;
+            min-height: 88px;
         }
-        .warcry-deco-open  { position: absolute; top: 0; left: 4px; font-size: 1.6rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
-        .warcry-deco-close { position: absolute; bottom: 0; right: 4px; font-size: 1.6rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
-        .warcry-box.long      { font-size: 1.0rem; }
-        .warcry-box.very-long { font-size: 0.84rem; }
+        .warcry-deco-open  { position: absolute; top: 0; left: 4px; font-size: 1.8rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
+        .warcry-deco-close { position: absolute; bottom: 0; right: 4px; font-size: 1.8rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
+        .warcry-box.long      { font-size: 1.12rem; }
+        .warcry-box.very-long { font-size: 0.95rem; }
 
         /* GitHub帯 */
         .github-bar {
@@ -371,7 +371,7 @@
             display: none;
             position: absolute;
             left: 10px;
-            bottom: 108px;
+            bottom: 130px;
             z-index: 8;
             pointer-events: none;
         }
@@ -408,6 +408,7 @@
         }
         .btn-main:hover { background: linear-gradient(to bottom, #3A3018, #2A2010); }
         .btn-main:disabled { opacity: 0.45; cursor: not-allowed; }
+        #btn_generate { letter-spacing: 0.18em; }
         #download_area { display: none; text-align: center; }
         #download_area p { margin-bottom: 8px; color: #7A6840; font-size: 0.85rem; letter-spacing: 0.15em; }
         .dl-btns { display: flex; gap: 10px; margin-top: 10px; }
@@ -722,11 +723,65 @@
                 opacity: 0.85;
             }
 
+            /* カード直下 GitHub エリア（モバイル） */
+            .card-github-area {
+                width: 100%;
+            }
+
             /* iOSのフォント自動拡大を防ぐ */
             input, select, textarea,
             .ruby-input-row input {
                 font-size: 16px;
             }
+        }
+
+        /* ── カード直下 GitHub エリア ── */
+        .card-github-area {
+            width: 640px;
+            margin-top: 6px;
+        }
+        .btn-card-github-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            width: 100%;
+            padding: 8px 14px;
+            background: rgba(20,16,8,0.55);
+            border: 1px solid rgba(154,123,26,0.28);
+            color: #6A5830;
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.78rem;
+            letter-spacing: 0.18em;
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: border-color 0.25s, color 0.25s, background 0.25s;
+        }
+        .btn-card-github-login:hover {
+            border-color: rgba(154,123,26,0.65);
+            color: var(--gold-light);
+            background: rgba(40,32,12,0.7);
+        }
+        .btn-card-github-login:disabled { opacity: 0.4; cursor: not-allowed; }
+        .card-github-verified {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(0,40,0,0.18);
+            border: 1px solid rgba(80,160,80,0.28);
+            box-sizing: border-box;
+        }
+        .card-github-id-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: var(--gold-light);
+            letter-spacing: 0.05em;
+        }
+        .card-verified-badge {
+            font-size: 0.68rem;
+            color: #70B080;
+            letter-spacing: 0.05em;
         }
 
     </style>
@@ -864,6 +919,19 @@
 
         </div>
         </div><!-- /.card-wrapper -->
+
+        <!-- カード直下：GitHubログイン（ログイン前）/ 認証済み表示（ログイン後） -->
+        <div id="card_github_area" class="card-github-area">
+            <button id="btn_github_login2" class="btn-card-github-login">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                <span data-i18n="btnCardGithubLogin">GitHub でログイン → アイコンをカードに反映</span>
+            </button>
+            <div id="card_github_verified" class="card-github-verified" style="display:none">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="opacity:0.7"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                <span id="card_github_id" class="card-github-id-text"></span>
+                <span class="card-verified-badge" data-i18n="githubVerified">✓ 本人確認済</span>
+            </div>
+        </div>
 
         <div class="action-btns">
             <button class="btn-main" id="btn_generate" data-i18n="btnShare">い ざ 、 𝕏 で シ ェ ア ！</button>
@@ -1010,7 +1078,7 @@ function makeStatusFanSVG(statusText, colorMode) {
     const labelY = (PY - R * 0.68).toFixed(1);
     const ty     = (PY - R * 0.38).toFixed(1);
 
-    return `<svg viewBox="-12 0 144 78" width="144" height="78" xmlns="http://www.w3.org/2000/svg"
+    return `<svg viewBox="-12 0 144 78" width="280" height="152" xmlns="http://www.w3.org/2000/svg"
       style="filter:drop-shadow(0 4px 10px ${glow})">
       <defs>
         <linearGradient id="fg" x1="30%" y1="100%" x2="70%" y2="0%">
@@ -1063,7 +1131,7 @@ function makeRankFanSVG(rank) {
     const labelY = (PY - R * 0.68).toFixed(1);
     const ty     = (PY - R * 0.38).toFixed(1);
 
-    return `<svg viewBox="-12 0 144 78" width="144" height="78" xmlns="http://www.w3.org/2000/svg"
+    return `<svg viewBox="-12 0 144 78" width="280" height="152" xmlns="http://www.w3.org/2000/svg"
       style="filter:drop-shadow(0 4px 10px ${glow})">
       <defs>
         <linearGradient id="fg" x1="30%" y1="100%" x2="70%" y2="0%">
@@ -1413,6 +1481,7 @@ const LANG = {
         rankingLinkRank: (r) => `▶ ランキングで ${r}位 を確認する`,
         registerFail: '❌ 登録失敗', btnSubmitReset: '🏆 ランキングに登録',
         btnGithubLogin: 'GitHub でログイン',
+        btnCardGithubLogin: 'GitHub でログイン → アイコンをカードに反映',
         githubVerified: '✓ 本人確認済',
         btnGithubLogout: 'ログアウト',
         githubLoginRequired: '⚠️ ランキング登録・シェアには GitHub ログインが必要です',
@@ -1452,6 +1521,7 @@ const LANG = {
         rankingLinkRank: (r) => `▶ Check Ranking — you are #${r}`,
         registerFail: '❌ Registration failed', btnSubmitReset: '🏆 Join Ranking',
         btnGithubLogin: 'Sign in with GitHub',
+        btnCardGithubLogin: 'Sign in with GitHub → Add avatar to card',
         githubVerified: '✓ Verified',
         btnGithubLogout: 'Sign out',
         githubLoginRequired: '⚠️ GitHub sign-in required to share or join the ranking',
@@ -1666,6 +1736,27 @@ document.getElementById('btn_github_login').addEventListener('click', async () =
     }
 });
 
+// GitHub ログインボタン（カード直下）— ドロワー内と同じ処理
+document.getElementById('btn_github_login2').addEventListener('click', async () => {
+    const btn = document.getElementById('btn_github_login2');
+    btn.disabled = true;
+    try {
+        const result = await fbAuth.signInWithPopup(_githubProvider);
+        const login = result.additionalUserInfo?.username;
+        if (login) {
+            localStorage.setItem('gh_login_' + result.user.uid, login);
+            _githubLogin = login;
+            _applyGithubLogin(login);
+        } else {
+            console.warn('GitHub username not found in additionalUserInfo');
+            btn.disabled = false;
+        }
+    } catch (e) {
+        console.warn('GitHub sign-in failed:', e);
+        btn.disabled = false;
+    }
+});
+
 // ログアウトボタン
 document.getElementById('btn_github_logout').addEventListener('click', async () => {
     await fbAuth.signOut();
@@ -1686,10 +1777,16 @@ fbAuth.onAuthStateChanged(user => {
 });
 
 function _applyGithubLogin(login) {
+    // ドロワー内ログインボタン
     document.getElementById('btn_github_login').style.display  = login ? 'none' : '';
     document.getElementById('btn_github_login').disabled = false;
     document.getElementById('github_verified_row').style.display = login ? '' : 'none';
     document.getElementById('github_verified_id').textContent = login ? '@' + login : '';
+    // カード直下ログインエリア
+    document.getElementById('btn_github_login2').style.display    = login ? 'none' : '';
+    document.getElementById('btn_github_login2').disabled         = false;
+    document.getElementById('card_github_verified').style.display = login ? '' : 'none';
+    document.getElementById('card_github_id').textContent         = login ? '@' + login : '';
     const input = document.getElementById('input_github');
     input.value = login || '';
     updateSideLabel(login || '');
