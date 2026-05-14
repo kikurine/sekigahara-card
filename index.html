@@ -1568,17 +1568,15 @@ document.getElementById('btn_github_login').addEventListener('click', async () =
     btn.disabled = true;
     try {
         const result = await fbAuth.signInWithPopup(_githubProvider);
-        const credential = firebase.auth.GithubAuthProvider.credentialFromResult(result);
-        if (credential?.accessToken) {
-            const res = await fetch('https://api.github.com/user', {
-                headers: { Authorization: `token ${credential.accessToken}` }
-            });
-            const data = await res.json();
-            if (data.login) {
-                localStorage.setItem('gh_login_' + result.user.uid, data.login);
-                _githubLogin = data.login;
-                _applyGithubLogin(data.login);
-            }
+        // additionalUserInfo.username に GitHub ログイン名が直接入っている
+        const login = result.additionalUserInfo?.username;
+        if (login) {
+            localStorage.setItem('gh_login_' + result.user.uid, login);
+            _githubLogin = login;
+            _applyGithubLogin(login);
+        } else {
+            console.warn('GitHub username not found in additionalUserInfo');
+            btn.disabled = false;
         }
     } catch (e) {
         console.warn('GitHub sign-in failed:', e);
