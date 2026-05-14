@@ -76,8 +76,8 @@
         label {
             display: block;
             margin-top: 20px;
-            font-size: 0.75rem;
-            color: #7A6840;
+            font-size: 0.8rem;
+            color: #9A8850;
             letter-spacing: 0.25em;
         }
         input, select, textarea {
@@ -116,8 +116,8 @@
         }
         .dice-btn:hover { opacity: 1; }
         .warcry-count {
-            font-size: 0.72rem;
-            color: #4A4030;
+            font-size: 0.74rem;
+            color: #7A6840;
             text-align: right;
             margin-top: 4px;
         }
@@ -264,10 +264,10 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            padding: 14px 38px;
-            font-size: 1.45rem;
+            padding: 18px 40px;
+            font-size: 1.52rem;
             font-family: 'Sawarabi Mincho', serif;
-            line-height: 1.65;
+            line-height: 1.7;
             color: var(--ink);
             text-align: center;
             word-break: auto-phrase;
@@ -275,12 +275,12 @@
             background: rgba(235,224,176,0.72);
             border-radius: 4px;
             margin-top: 4px;
-            min-height: 108px;
+            min-height: 180px;
         }
-        .warcry-deco-open  { position: absolute; top: 0; left: 4px; font-size: 2rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
-        .warcry-deco-close { position: absolute; bottom: 0; right: 4px; font-size: 2rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
-        .warcry-box.long      { font-size: 1.28rem; }
-        .warcry-box.very-long { font-size: 1.08rem; }
+        .warcry-deco-open  { position: absolute; top: 2px; left: 5px; font-size: 2.2rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
+        .warcry-deco-close { position: absolute; bottom: 2px; right: 5px; font-size: 2.2rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
+        .warcry-box.long      { font-size: 1.35rem; }
+        .warcry-box.very-long { font-size: 1.15rem; }
 
         /* GitHub帯 */
         .github-bar {
@@ -371,7 +371,7 @@
             display: none;
             position: absolute;
             left: 10px;
-            bottom: 160px;
+            bottom: 218px;
             z-index: 8;
             pointer-events: none;
         }
@@ -500,7 +500,7 @@
         .ruby-run-btn:disabled { opacity: 0.45; cursor: not-allowed; }
         .ruby-output {
             margin-top: 6px;
-            font-size: 0.72rem;
+            font-size: 0.76rem;
             min-height: 16px;
             font-family: 'JetBrains Mono', monospace;
             word-break: break-all;
@@ -513,8 +513,8 @@
             padding: 8px 10px;
             background: rgba(30,20,50,0.6);
             border: 1px solid #3A2860;
-            font-size: 0.75rem;
-            color: #8A6BA8;
+            font-size: 0.78rem;
+            color: #A08BC8;
         }
         .ruby-score-area .score-val {
             font-family: 'JetBrains Mono', monospace;
@@ -542,7 +542,7 @@
         /* ── ⑤ ヒント例 ── */
         .ruby-examples { margin-top: 8px; }
         .ruby-examples summary {
-            font-size: 0.67rem; color: #5A4A70; cursor: pointer;
+            font-size: 0.73rem; color: #7A6A90; cursor: pointer;
             letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;
             list-style: none; user-select: none;
         }
@@ -594,8 +594,8 @@
         .battle-flash.flash-east { color: #F8C010; }
 
         .ruby-hint {
-            font-size: 0.67rem;
-            color: #7A6A50;
+            font-size: 0.72rem;
+            color: #8A7A60;
             margin-top: 5px;
             font-family: 'JetBrains Mono', monospace;
             line-height: 1.7;
@@ -706,7 +706,8 @@
             .site-title {
                 font-size: 0.82rem;
                 letter-spacing: 0.15em;
-                padding: 6px 12px;
+                padding: 5px 12px;
+                margin-bottom: 4px;
                 text-align: center;
             }
             .container {
@@ -717,7 +718,7 @@
                 width: 100%;
                 box-sizing: border-box;
                 overflow-y: auto;
-                height: calc(100dvh - 36px); /* site-titleの高さ分を引く */
+                height: calc(100dvh - 34px); /* site-titleの高さ分を引く */
             }
             /* カードセクション */
             .container > div:last-child {
@@ -944,7 +945,7 @@
             <div class="card-body">
                 <div class="armor-stage">
                     <div class="side-deco-left" id="card_side_deco">西軍</div>
-                    <canvas id="warrior_canvas" width="640" height="640"></canvas>
+                    <canvas id="warrior_canvas" width="640" height="800"></canvas>
                 </div>
                 <div class="info-strip">
                     <div class="info-main">
@@ -995,7 +996,7 @@
 
 <script>
 // ── 定数 ──────────────────────────────────────────────
-const W_W = 640, W_H = 640;  // warrior_canvas の内部サイズ（1:1）
+const W_W = 640, W_H = 800;  // warrior_canvas の内部サイズ（縦長 4:5）
 
 const CHROMA    = { r: 0, g: 195, b: 228 };
 const CHROMA_TOL = 72;
@@ -1011,8 +1012,8 @@ const FACE_CFG = {
 };
 
 const WARRIOR_CFG = {
-    east: { x: 130, y: 0, h: 600 },
-    west: { x: 130, y: 0, h: 600 },
+    east: { x: 120, y: 0, h: 660 },
+    west: { x: 120, y: 0, h: 660 },
 };
 
 // ── 画像読み込み ──────────────────────────────────────
@@ -1727,7 +1728,7 @@ function updateCardScale() {
     if (maxW < 640) {
         const scale = maxW / 640;
         wrapper.style.width  = maxW + 'px';
-        wrapper.style.height = maxW + 'px';  // 正方形なので width = height
+        wrapper.style.height = Math.round(maxW * W_H / W_W) + 'px';  // 縦長（4:5）
         wrapper.style.overflow = 'hidden';
         card.style.transformOrigin = 'top left';
         card.style.transform = `scale(${scale})`;
