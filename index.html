@@ -848,6 +848,7 @@
         </div>
         <h2 data-i18n="formTitle">出 陣 の 支 度</h2>
 
+        <!-- ① 所属陣営 -->
         <div class="field-group" id="fg_side">
             <label data-i18n="labelSide">所 属 陣 営</label>
             <select id="input_side">
@@ -856,39 +857,13 @@
             </select>
         </div>
 
+        <!-- ② 武将名 -->
         <div class="field-group" id="fg_name">
             <label data-i18n="labelName">武 将 名</label>
             <input type="text" id="input_name" value="せきがはら るびゑもん" maxlength="15">
         </div>
 
-        <div class="field-group" id="fg_github">
-            <label>GitHub ID</label>
-            <!-- ログイン前 -->
-            <button id="btn_github_login" class="btn-github-login" data-i18n="btnGithubLogin">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                <span data-i18n="btnGithubLogin">GitHub でログイン</span>
-            </button>
-            <div class="github-login-hint" data-i18n="githubLoginHint">ランキング登録・シェアに必要</div>
-            <!-- ログイン後（認証済み表示） -->
-            <div id="github_verified_row" class="github-verified-row" style="display:none">
-                <div class="github-verified-top">
-                    <span class="github-id-verified" id="github_verified_id"></span>
-                    <span class="verified-badge" data-i18n="githubVerified">✓ 本人確認済</span>
-                </div>
-                <button id="btn_github_logout" class="btn-github-logout" data-i18n="btnGithubLogout">ログアウト</button>
-            </div>
-            <!-- カード描画・既存コードが参照する隠しフィールド -->
-            <input type="text" id="input_github" style="display:none">
-        </div>
-
-        <div class="field-group" id="fg_warcry">
-            <div class="war-cry-container">
-                <label><span data-i18n="labelWarcry">い ざ 、 名 乗 り を 上 げ よ</span> <button class="dice-btn" id="dice_btn">🎲</button></label>
-                <textarea id="input_warcry" rows="4" maxlength="60">いざ、出陣！</textarea>
-                <div class="warcry-count" id="warcry_count">7 / 60</div>
-            </div>
-        </div>
-
+        <!-- ③ 算法合戦（メイン） -->
         <div class="field-group" id="fg_ruby">
             <div class="ruby-section">
                 <label><span data-i18n="labelBattle">⚔️ 算法合戦</span> <span class="live-badge">LIVE</span></label>
@@ -923,6 +898,36 @@
                     コードで軍勢を増強せよ &nbsp;／&nbsp; スコア = 結果 ÷ 文字数
                 </div>
             </div>
+        </div>
+
+        <!-- ④ 名乗り文（カスタマイズ） -->
+        <div class="field-group" id="fg_warcry">
+            <div class="war-cry-container">
+                <label><span data-i18n="labelWarcry">い ざ 、 名 乗 り を 上 げ よ</span> <button class="dice-btn" id="dice_btn">🎲</button></label>
+                <textarea id="input_warcry" rows="4" maxlength="60">いざ、出陣！</textarea>
+                <div class="warcry-count" id="warcry_count">7 / 60</div>
+            </div>
+        </div>
+
+        <!-- ⑤ GitHub ID（最下部） -->
+        <div class="field-group" id="fg_github">
+            <label>GitHub ID</label>
+            <!-- ログイン前 -->
+            <button id="btn_github_login" class="btn-github-login" data-i18n="btnGithubLogin">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                <span data-i18n="btnGithubLogin">GitHub でログイン</span>
+            </button>
+            <div class="github-login-hint" data-i18n="githubLoginHint">ランキング登録・シェアに必要</div>
+            <!-- ログイン後（認証済み表示） -->
+            <div id="github_verified_row" class="github-verified-row" style="display:none">
+                <div class="github-verified-top">
+                    <span class="github-id-verified" id="github_verified_id"></span>
+                    <span class="verified-badge" data-i18n="githubVerified">✓ 本人確認済</span>
+                </div>
+                <button id="btn_github_logout" class="btn-github-logout" data-i18n="btnGithubLogout">ログアウト</button>
+            </div>
+            <!-- カード描画・既存コードが参照する隠しフィールド -->
+            <input type="text" id="input_github" style="display:none">
         </div>
 
     </div>
