@@ -1562,18 +1562,14 @@ let _fbUser = null;
 let _githubLogin = null;
 const _githubProvider = new firebase.auth.GithubAuthProvider();
 
-// GitHub ログインボタン（リダイレクト方式）
-document.getElementById('btn_github_login').addEventListener('click', () => {
-    document.getElementById('btn_github_login').disabled = true;
-    fbAuth.signInWithRedirect(_githubProvider);
-});
-
-// リダイレクト戻り後にアクセストークンでログイン名を取得
-fbAuth.getRedirectResult().then(async result => {
-    if (!result || !result.user) return;
-    const credential = firebase.auth.GithubAuthProvider.credentialFromResult(result);
-    if (credential?.accessToken) {
-        try {
+// GitHub ログインボタン（ポップアップ方式）
+document.getElementById('btn_github_login').addEventListener('click', async () => {
+    const btn = document.getElementById('btn_github_login');
+    btn.disabled = true;
+    try {
+        const result = await fbAuth.signInWithPopup(_githubProvider);
+        const credential = firebase.auth.GithubAuthProvider.credentialFromResult(result);
+        if (credential?.accessToken) {
             const res = await fetch('https://api.github.com/user', {
                 headers: { Authorization: `token ${credential.accessToken}` }
             });
@@ -1583,9 +1579,12 @@ fbAuth.getRedirectResult().then(async result => {
                 _githubLogin = data.login;
                 _applyGithubLogin(data.login);
             }
-        } catch (e) { console.warn('GitHub API error:', e); }
+        }
+    } catch (e) {
+        console.warn('GitHub sign-in failed:', e);
+        btn.disabled = false;
     }
-}).catch(e => console.warn('getRedirectResult error:', e));
+});
 
 // ログアウトボタン
 document.getElementById('btn_github_logout').addEventListener('click', async () => {
