@@ -694,7 +694,20 @@
             font-size: 0.68rem;
             color: #70B080;
             letter-spacing: 0.05em;
+            flex: 1;
         }
+        .btn-card-logout {
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.68rem;
+            color: #7A5A40;
+            background: none;
+            border: 1px solid #3A2810;
+            padding: 3px 8px;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            flex-shrink: 0;
+        }
+        .btn-card-logout:hover { color: #B08060; border-color: #6A4820; }
 
         /* ── レスポンシブ ── */
         /* ── ドロワーハンドル（モバイルのみ表示） ── */
@@ -914,26 +927,8 @@
             </div>
         </div>
 
-        <!-- ⑤ GitHub ID（最下部） -->
-        <div class="field-group" id="fg_github">
-            <label>GitHub ID</label>
-            <!-- ログイン前 -->
-            <button id="btn_github_login" class="btn-github-login" data-i18n="btnGithubLogin">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                <span data-i18n="btnGithubLogin">GitHub でログイン</span>
-            </button>
-            <div class="github-login-hint" data-i18n="githubLoginHint">ランキング登録・シェアに必要</div>
-            <!-- ログイン後（認証済み表示） -->
-            <div id="github_verified_row" class="github-verified-row" style="display:none">
-                <div class="github-verified-top">
-                    <span class="github-id-verified" id="github_verified_id"></span>
-                    <span class="verified-badge" data-i18n="githubVerified">✓ 本人確認済</span>
-                </div>
-                <button id="btn_github_logout" class="btn-github-logout" data-i18n="btnGithubLogout">ログアウト</button>
-            </div>
             <!-- カード描画・既存コードが参照する隠しフィールド -->
             <input type="text" id="input_github" style="display:none">
-        </div>
 
     </div>
 
@@ -988,6 +983,7 @@
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="opacity:0.7"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                 <span id="card_github_id" class="card-github-id-text"></span>
                 <span class="card-verified-badge" data-i18n="githubVerified">✓ 本人確認済</span>
+                <button id="btn_github_logout" class="btn-card-logout" data-i18n="btnGithubLogout">ログアウト</button>
             </div>
         </div>
 
@@ -1795,29 +1791,7 @@ let _fbUser = null;
 let _githubLogin = null;
 const _githubProvider = new firebase.auth.GithubAuthProvider();
 
-// GitHub ログインボタン（ポップアップ方式）
-document.getElementById('btn_github_login').addEventListener('click', async () => {
-    const btn = document.getElementById('btn_github_login');
-    btn.disabled = true;
-    try {
-        const result = await fbAuth.signInWithPopup(_githubProvider);
-        // additionalUserInfo.username に GitHub ログイン名が直接入っている
-        const login = result.additionalUserInfo?.username;
-        if (login) {
-            localStorage.setItem('gh_login_' + result.user.uid, login);
-            _githubLogin = login;
-            _applyGithubLogin(login);
-        } else {
-            console.warn('GitHub username not found in additionalUserInfo');
-            btn.disabled = false;
-        }
-    } catch (e) {
-        console.warn('GitHub sign-in failed:', e);
-        btn.disabled = false;
-    }
-});
-
-// GitHub ログインボタン（カード直下）— ドロワー内と同じ処理
+// GitHub ログインボタン（カード直下）
 document.getElementById('btn_github_login2').addEventListener('click', async () => {
     const btn = document.getElementById('btn_github_login2');
     btn.disabled = true;
@@ -1858,11 +1832,6 @@ fbAuth.onAuthStateChanged(user => {
 });
 
 function _applyGithubLogin(login) {
-    // ドロワー内ログインボタン
-    document.getElementById('btn_github_login').style.display  = login ? 'none' : '';
-    document.getElementById('btn_github_login').disabled = false;
-    document.getElementById('github_verified_row').style.display = login ? '' : 'none';
-    document.getElementById('github_verified_id').textContent = login ? '@' + login : '';
     // カード直下ログインエリア
     document.getElementById('btn_github_login2').style.display    = login ? 'none' : '';
     document.getElementById('btn_github_login2').disabled         = false;
