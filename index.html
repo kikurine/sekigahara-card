@@ -844,7 +844,7 @@
         <div id="drawer_handle" class="drawer-handle">
             <div class="drawer-pill"></div>
             <span class="drawer-hint-arrow" aria-hidden="true">∧</span>
-            <span class="drawer-label" data-i18n="formTitle">出 陣 の 支 度</span>
+            <span class="drawer-label" data-i18n="drawerLabel">コードで軍勢を増強せよ！</span>
         </div>
         <h2 data-i18n="formTitle">出 陣 の 支 度</h2>
 
@@ -1151,7 +1151,7 @@ function makeStatusFanSVG(statusText, colorMode) {
         font-family="'Sawarabi Mincho', serif"
         font-size="${fs}" fill="rgba(255,255,255,0.95)" filter="url(#ts)">${statusText}</text>
     </svg>
-    <div class="rank-badge-caption" style="background:rgba(0,0,0,0.55);padding:2px 8px;border-radius:3px;">${t('statusBoost')}</div>`;
+    `;
 }
 
 function makeRankFanSVG(rank) {
@@ -1511,6 +1511,7 @@ const LANG = {
         cardSideWest: '西軍', cardSideEast: '東軍',
         warcryOpen: '「', warcryClose: '」',
         statusNeutral: '東西拮抗', statusWest: '西軍優勢', statusEast: '東軍優勢',
+        drawerLabel: 'コードで軍勢を増強せよ！',
         statusBoost: 'コードで軍勢を増強せよ！', battleLabel: '算法合戦',
         flashWestTurn: '⚡ 西軍、逆転！', flashEastTurn: '⚡ 東軍、逆転！',
         flashWestGain: '西軍が勢力を拡大！', flashEastGain: '東軍が追い上げる！',
@@ -1552,6 +1553,7 @@ const LANG = {
         cardSideWest: 'West', cardSideEast: 'East',
         warcryOpen: '“', warcryClose: '”',
         statusNeutral: 'Balanced', statusWest: 'West Leads', statusEast: 'East Leads',
+        drawerLabel: 'Boost your army with code!',
         statusBoost: 'Boost your forces with code!', battleLabel: 'Code Battle',
         flashWestTurn: '⚡ West takes the lead!', flashEastTurn: '⚡ East takes the lead!',
         flashWestGain: 'West is gaining ground!', flashEastGain: 'East is catching up!',
