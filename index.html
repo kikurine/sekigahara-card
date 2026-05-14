@@ -322,12 +322,17 @@
         .btn-github-login:disabled { opacity: 0.45; cursor: not-allowed; }
         .github-verified-row {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            gap: 6px;
             padding: 8px 12px;
             background: rgba(0,60,0,0.18);
             border: 1px solid rgba(80,160,80,0.35);
             box-sizing: border-box;
+        }
+        .github-verified-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .github-id-verified {
             font-family: 'JetBrains Mono', monospace;
@@ -342,16 +347,15 @@
             white-space: nowrap;
         }
         .btn-github-logout {
-            margin-left: auto;
+            align-self: flex-end;
             background: none;
             border: 1px solid #3A3020;
             color: #7A6840;
-            font-size: 0.7rem;
-            padding: 3px 10px;
+            font-size: 0.68rem;
+            padding: 2px 10px;
             cursor: pointer;
             letter-spacing: 0.1em;
             font-family: 'Sawarabi Mincho', serif;
-            white-space: nowrap;
         }
         .btn-github-logout:hover { border-color: var(--gold); color: var(--gold-light); }
 
@@ -692,8 +696,10 @@
             </button>
             <!-- ログイン後（認証済み表示） -->
             <div id="github_verified_row" class="github-verified-row" style="display:none">
-                <span class="github-id-verified" id="github_verified_id"></span>
-                <span class="verified-badge" data-i18n="githubVerified">✓ 本人確認済</span>
+                <div class="github-verified-top">
+                    <span class="github-id-verified" id="github_verified_id"></span>
+                    <span class="verified-badge" data-i18n="githubVerified">✓ 本人確認済</span>
+                </div>
                 <button id="btn_github_logout" class="btn-github-logout" data-i18n="btnGithubLogout">ログアウト</button>
             </div>
             <!-- カード描画・既存コードが参照する隠しフィールド -->
