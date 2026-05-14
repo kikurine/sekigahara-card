@@ -264,8 +264,8 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            padding: 12px 36px;
-            font-size: 1.28rem;
+            padding: 14px 38px;
+            font-size: 1.45rem;
             font-family: 'Sawarabi Mincho', serif;
             line-height: 1.65;
             color: var(--ink);
@@ -275,12 +275,12 @@
             background: rgba(235,224,176,0.72);
             border-radius: 4px;
             margin-top: 4px;
-            min-height: 88px;
+            min-height: 108px;
         }
-        .warcry-deco-open  { position: absolute; top: 0; left: 4px; font-size: 1.8rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
-        .warcry-deco-close { position: absolute; bottom: 0; right: 4px; font-size: 1.8rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
-        .warcry-box.long      { font-size: 1.12rem; }
-        .warcry-box.very-long { font-size: 0.95rem; }
+        .warcry-deco-open  { position: absolute; top: 0; left: 4px; font-size: 2rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
+        .warcry-deco-close { position: absolute; bottom: 0; right: 4px; font-size: 2rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
+        .warcry-box.long      { font-size: 1.28rem; }
+        .warcry-box.very-long { font-size: 1.08rem; }
 
         /* GitHub帯 */
         .github-bar {
@@ -371,7 +371,7 @@
             display: none;
             position: absolute;
             left: 10px;
-            bottom: 130px;
+            bottom: 160px;
             z-index: 8;
             pointer-events: none;
         }
@@ -723,6 +723,34 @@
                 opacity: 0.85;
             }
 
+            /* ドロワー ∧ ヒント矢印 */
+            @keyframes hint-bounce {
+                0%, 100% { transform: translateY(0);   opacity: 0.55; }
+                50%      { transform: translateY(-5px); opacity: 1;    }
+            }
+            .drawer-hint-arrow {
+                font-size: 0.78rem;
+                color: var(--gold-light);
+                animation: hint-bounce 1.6s ease-in-out infinite;
+                line-height: 1;
+                display: block;
+            }
+            .controls.drawer-open .drawer-hint-arrow {
+                visibility: hidden;
+            }
+
+            /* ドロワー 初回ペークアニメーション */
+            @keyframes drawer-peek-once {
+                0%   { transform: translateY(calc(100% - 56px)); }
+                30%  { transform: translateY(calc(100% - 170px)); }
+                68%  { transform: translateY(calc(100% - 170px)); }
+                100% { transform: translateY(calc(100% - 56px)); }
+            }
+            .controls.drawer-peek-anim {
+                animation: drawer-peek-once 2s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+                transition: none !important;
+            }
+
             /* カード直下 GitHub エリア（モバイル） */
             .card-github-area {
                 width: 100%;
@@ -799,6 +827,7 @@
     <div class="controls">
         <div id="drawer_handle" class="drawer-handle">
             <div class="drawer-pill"></div>
+            <span class="drawer-hint-arrow" aria-hidden="true">∧</span>
             <span class="drawer-label" data-i18n="formTitle">出 陣 の 支 度</span>
         </div>
         <h2 data-i18n="formTitle">出 陣 の 支 度</h2>
@@ -1078,7 +1107,7 @@ function makeStatusFanSVG(statusText, colorMode) {
     const labelY = (PY - R * 0.68).toFixed(1);
     const ty     = (PY - R * 0.38).toFixed(1);
 
-    return `<svg viewBox="-12 0 144 78" width="280" height="152" xmlns="http://www.w3.org/2000/svg"
+    return `<svg viewBox="-12 0 144 78" width="360" height="195" xmlns="http://www.w3.org/2000/svg"
       style="filter:drop-shadow(0 4px 10px ${glow})">
       <defs>
         <linearGradient id="fg" x1="30%" y1="100%" x2="70%" y2="0%">
@@ -1131,7 +1160,7 @@ function makeRankFanSVG(rank) {
     const labelY = (PY - R * 0.68).toFixed(1);
     const ty     = (PY - R * 0.38).toFixed(1);
 
-    return `<svg viewBox="-12 0 144 78" width="280" height="152" xmlns="http://www.w3.org/2000/svg"
+    return `<svg viewBox="-12 0 144 78" width="360" height="195" xmlns="http://www.w3.org/2000/svg"
       style="filter:drop-shadow(0 4px 10px ${glow})">
       <defs>
         <linearGradient id="fg" x1="30%" y1="100%" x2="70%" y2="0%">
@@ -1693,8 +1722,22 @@ window.addEventListener('resize', updateCardScale);
 
 // ── ドロワー開閉（モバイル） ──────────────────────────
 document.getElementById('drawer_handle').addEventListener('click', () => {
-    document.querySelector('.controls').classList.toggle('drawer-open');
+    const ctrl = document.querySelector('.controls');
+    ctrl.classList.remove('drawer-peek-anim'); // ペーク中なら即終了
+    ctrl.classList.toggle('drawer-open');
 });
+
+// モバイルのみ：1.2秒後に一度だけドロワーをちょっと覗かせる
+if (window.innerWidth <= 760) {
+    setTimeout(() => {
+        const ctrl = document.querySelector('.controls');
+        if (!ctrl || ctrl.classList.contains('drawer-open')) return;
+        ctrl.classList.add('drawer-peek-anim');
+        ctrl.addEventListener('animationend', () => {
+            ctrl.classList.remove('drawer-peek-anim');
+        }, { once: true });
+    }, 1200);
+}
 
 // ── Firebase ─────────────────────────────────────────
 const fbApp = firebase.initializeApp({
