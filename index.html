@@ -1282,15 +1282,6 @@ function buildExportCanvas() {
 }
 
 document.getElementById('btn_generate').addEventListener('click', () => {
-    // ログイン必須チェック
-    if (!_fbUser || !_githubLogin) {
-        const btn = document.getElementById('btn_generate');
-        const orig = btn.textContent;
-        btn.textContent = t('githubLoginRequired');
-        document.getElementById('btn_github_login').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => { btn.textContent = orig; }, 3000);
-        return;
-    }
     const btn = document.getElementById('btn_generate');
     btn.disabled = true; btn.textContent = t('generating');
     htmlToImage.toPng(document.getElementById('card'), { pixelRatio: 2.5, cacheBust: true })
