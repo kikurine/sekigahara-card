@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天下分け目の算法合戦</title>
+    <link href="https://fonts.googleapis.com/css2?family=Yuji+Mai&family=WDXL+Lubrifont+JP+N&family=Sawarabi+Mincho&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+    <style>
+        :root {
+            --side-color: #7D2200;
+            --gold:       #9A7B1A;
+            --gold-light: #C9A84C;
+            --paper:      #EBE0B0;
+            --ink:        #1C1510;
+            --ink-mid:    #3A2D1E;
+        }
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: #07090F;
+            background-image:
+                linear-gradient(rgba(5,7,14,0.72), rgba(5,7,14,0.72)),
+                url('https://upload.wikimedia.org/wikipedia/commons/9/9f/Sekigaharascreen.jpg');
+            background-size: cover;
+            background-position: center top;
+            background-attachment: fixed;
+            color: #C8B880;
+            font-family: 'Sawarabi Mincho', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            min-height: 100vh;
+        }
+
+        .site-title {
+            font-size: 1.1rem;
+            letter-spacing: 0.6em;
+            color: var(--gold-light);
+            border-top: 1px solid var(--gold);
+            border-bottom: 1px solid var(--gold);
+            padding: 8px 40px;
+            margin-bottom: 35px;
+            text-shadow: 0 0 25px rgba(180,140,40,0.35);
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 50px;
+            justify-content: center;
+            max-width: 1000px;
+        }
+
+        /* ── 操作パネル ── */
+        .controls {
+            width: 300px;
+            background: #100D08;
+            padding: 28px;
+            border: 1px solid var(--gold);
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.6), 6px 6px 24px rgba(0,0,0,0.9);
+            align-self: flex-start;
+        }
+        h2 {
+            letter-spacing: 0.4em;
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--gold);
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: var(--gold-light);
+        }
+        label {
+            display: block;
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: #7A6840;
+            letter-spacing: 0.25em;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 10px;
+            margin-top: 6px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #3A3020;
+            color: #D4C090;
+            border-radius: 0;
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-bottom-color: var(--gold);
+        }
+        select option { background: #1C1810; }
+        textarea {
+            resize: none;
+            border: 1px solid #3A3020;
+            padding: 8px;
+        }
+        textarea:focus { border-color: var(--gold); }
+        .dice-btn {
+            background: none;
+            border: none;
+            color: var(--gold-light);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 2px;
+            vertical-align: middle;
+            opacity: 0.75;
+        }
+        .dice-btn:hover { opacity: 1; }
+        .warcry-count {
+            font-size: 0.72rem;
+            color: #4A4030;
+            text-align: right;
+            margin-top: 4px;
+        }
+        .warcry-count.over { color: #9B3A1A; }
+
+        /* ── 旗アニメーション ── */
+        @keyframes flag-wave {
+            0%   { clip-path: polygon(0 0, 100% 0%,   calc(100% - 10px) 100%, 0 100%); transform: rotate(0deg);    }
+            20%  { clip-path: polygon(0 0, 100% 8%,   calc(100% - 5px)  92%,  0 100%); transform: rotate(0.4deg);  }
+            40%  { clip-path: polygon(0 0, 100% 1%,   calc(100% - 14px) 99%,  0 100%); transform: rotate(-0.3deg); }
+            60%  { clip-path: polygon(0 0, 100% -5%,  calc(100% - 7px)  105%, 0 100%); transform: rotate(0.5deg);  }
+            80%  { clip-path: polygon(0 0, 100% 4%,   calc(100% - 12px) 96%,  0 100%); transform: rotate(-0.2deg); }
+            100% { clip-path: polygon(0 0, 100% 0%,   calc(100% - 10px) 100%, 0 100%); transform: rotate(0deg);    }
+        }
+
+        /* ── 武将カード ── */
+        #card {
+            width: 640px;
+            background-color: var(--paper);
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.11'/%3E%3C/svg%3E"),
+                linear-gradient(rgba(235,224,176,0.92), rgba(210,192,125,0.92));
+            background-size: auto, cover;
+            border: none;
+            box-shadow: 0 0 0 3px #1C1510, 0 0 0 10px var(--gold), 0 0 0 13px #1C1510, 8px 8px 40px rgba(0,0,0,0.9);
+            color: var(--ink);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #card.top10 {
+            box-shadow: 0 0 0 3px #1C1510, 0 0 0 10px #FFD700, 0 0 0 13px #1C1510, 0 0 40px 12px rgba(255,215,0,0.5), 8px 8px 40px rgba(0,0,0,0.9);
+        }
+        #card.top10 .info-strip {
+            background: linear-gradient(
+                transparent,
+                rgba(200,155,20,0.88) 22%,
+                rgba(180,130,10,0.97)
+            );
+        }
+        #card.top10 .card-frame {
+            border-color: rgba(255,215,0,0.7);
+        }
+
+        .card-frame {
+            position: absolute;
+            inset: 14px;
+            border: 1px solid rgba(154,123,26,0.38);
+            pointer-events: none;
+            z-index: 6;
+        }
+        .corner { position: absolute; width: 18px; height: 18px; z-index: 7; opacity: 0.65; }
+        .corner-tl { top: 16px; left: 16px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+        .corner-tr { top: 16px; right: 16px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); }
+        .corner-bl { bottom: 16px; left: 16px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+        .corner-br { bottom: 16px; right: 16px; border-bottom: 2px solid var(--gold); border-right: 2px solid var(--gold); }
+
+        .side-label {
+            position: absolute; top: 22px; left: 0;
+            background: var(--side-color); color: #F5E8C0;
+            padding: 8px 30px 8px 14px;
+            font-weight: bold; z-index: 10;
+            letter-spacing: 0.1em; font-size: 1.05rem;
+            max-width: 220px; overflow: hidden; white-space: nowrap;
+            display: flex; align-items: center; gap: 6px;
+            clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            transform-origin: left center;
+            animation: flag-wave 3.5s ease-in-out infinite;
+        }
+
+        .card-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 武将エリア（Canvas） */
+        .armor-stage {
+            position: relative;
+            overflow: hidden;
+        }
+        #warrior_canvas {
+            display: block;
+            width: 100%;
+        }
+
+
+        /* 武将名（バッジ直下・横書き） */
+        .card-name-display {
+            position: absolute; top: 62px; left: 0;
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 1.9rem;
+            color: var(--ink);
+            text-shadow: 1px 2px 5px rgba(235,224,176,0.95);
+            background: rgba(235,224,176,0.78);
+            padding: 5px 18px 5px 14px;
+            z-index: 10;
+            max-width: 190px;
+            line-height: 1.25;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+            transform-origin: left center;
+            animation: flag-wave 4.2s ease-in-out infinite;
+            animation-delay: -1.8s;
+        }
+
+        /* サイド装飾文字 */
+        .side-deco-left {
+            position: absolute; left: 4px; top: 50px;
+            writing-mode: vertical-rl;
+            font-size: 3.2rem;
+            font-family: 'Yuji Mai', serif;
+            color: rgba(154,123,26,0.18);
+            letter-spacing: 0.1em;
+            z-index: 0;
+            line-height: 1;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        /* 下部 情報帯（カード下部オーバーレイ） */
+        .info-strip {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            z-index: 6;
+            padding: 16px 0 10px;
+            background: linear-gradient(
+                transparent,
+                rgba(220,205,148,0.88) 22%,
+                rgba(210,192,125,0.97)
+            );
+        }
+        .info-main {
+            display: flex;
+            flex-direction: column;
+            padding: 6px 14px 0;
+        }
+
+        /* 名乗り */
+        .warcry-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 8px 32px;
+            font-size: 1.15rem;
+            font-family: 'Sawarabi Mincho', serif;
+            line-height: 1.5;
+            color: var(--ink);
+            text-align: center;
+            word-break: auto-phrase;
+            overflow-wrap: break-word;
+            background: rgba(235,224,176,0.72);
+            border-radius: 4px;
+            margin-top: 4px;
+            min-height: 58px;
+        }
+        .warcry-deco-open  { position: absolute; top: 0; left: 4px; font-size: 1.6rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
+        .warcry-deco-close { position: absolute; bottom: 0; right: 4px; font-size: 1.6rem; color: rgba(154,123,26,0.2); line-height: 1; font-family: serif; }
+        .warcry-box.long      { font-size: 1.0rem; }
+        .warcry-box.very-long { font-size: 0.84rem; }
+
+        /* GitHub帯 */
+        .github-bar {
+            height: 24px;
+            border-top: 1px solid rgba(154,123,26,0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 6px;
+        }
+        .github-bar-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            color: var(--ink-mid);
+            opacity: 0.7;
+            transform: translateX(5px);
+        }
+
+        /* GitHub ログインボタン */
+        .btn-github-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 16px;
+            background: linear-gradient(to bottom, #2A2010, #181208);
+            border: 1px solid var(--gold);
+            color: var(--gold-light);
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.88rem;
+            letter-spacing: 0.2em;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        .btn-github-login:hover { background: linear-gradient(to bottom, #3A3018, #2A2010); }
+        .btn-github-login:disabled { opacity: 0.45; cursor: not-allowed; }
+        .github-verified-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(0,60,0,0.18);
+            border: 1px solid rgba(80,160,80,0.35);
+            box-sizing: border-box;
+        }
+        .github-id-verified {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--gold-light);
+            letter-spacing: 0.05em;
+        }
+        .verified-badge {
+            font-size: 0.7rem;
+            color: #70B080;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+        .btn-github-logout {
+            margin-left: auto;
+            background: none;
+            border: 1px solid #3A3020;
+            color: #7A6840;
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            font-family: 'Sawarabi Mincho', serif;
+            white-space: nowrap;
+        }
+        .btn-github-logout:hover { border-color: var(--gold); color: var(--gold-light); }
+
+        /* 順位バッジ */
+        .rank-badge {
+            display: none;
+            position: absolute;
+            left: 10px;
+            bottom: 108px;
+            z-index: 8;
+            pointer-events: none;
+        }
+        .rank-badge.show { display: block; }
+        .rank-badge-caption {
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.58rem;
+            color: rgba(255,255,255,0.92);
+            text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+            white-space: nowrap;
+            letter-spacing: 0.05em;
+            margin-top: 3px;
+            padding-left: 2px;
+        }
+
+        /* ── アクション ── */
+        .action-btns {
+            margin-top: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 640px;
+        }
+        .btn-main {
+            padding: 14px;
+            border: 1px solid var(--gold);
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(to bottom, #2A2010, #181208);
+            color: var(--gold-light);
+            font-family: 'Sawarabi Mincho', serif;
+            letter-spacing: 0.4em;
+        }
+        .btn-main:hover { background: linear-gradient(to bottom, #3A3018, #2A2010); }
+        .btn-main:disabled { opacity: 0.45; cursor: not-allowed; }
+        #download_area { display: none; text-align: center; }
+        #download_area p { margin-bottom: 8px; color: #7A6840; font-size: 0.85rem; letter-spacing: 0.15em; }
+        .dl-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-download {
+            flex: 1; padding: 12px;
+            border: 1px solid #2A5035;
+            background: linear-gradient(to bottom, #182818, #0E1C10);
+            color: #70B080;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.88rem;
+            letter-spacing: 0.2em;
+        }
+        .btn-share-x {
+            flex: 1; padding: 12px;
+            border: 1px solid #1A3A4A;
+            background: linear-gradient(to bottom, #0D1F2D, #081520);
+            color: #60A8C8;
+            cursor: pointer;
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.88rem;
+            letter-spacing: 0.2em;
+        }
+        .btn-share-x:hover { background: linear-gradient(to bottom, #152A3A, #0D1F2D); }
+
+        /* ── フォーカス時ハイライト ── */
+        .field-group:focus-within > label,
+        .field-group:focus-within .war-cry-container > label,
+        .field-group:focus-within .ruby-section > label {
+            color: #C9A84C;
+            text-shadow: 0 0 10px rgba(201,168,76,0.22);
+            transition: color 0.2s, text-shadow 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            background: rgba(201,168,76,0.04);
+        }
+
+        /* カードwrapper（スケール用） */
+        .card-wrapper {
+            position: relative;
+            width: 640px;
+            flex-shrink: 0;
+        }
+
+        /* ── 算法合戦 ── */
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+        .live-badge {
+            display: inline-block;
+            background: #8A3030;
+            color: #F0C0C0;
+            font-size: 0.55rem;
+            padding: 2px 6px;
+            border-radius: 2px;
+            letter-spacing: 0.15em;
+            animation: blink 1.5s infinite;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
+        .ruby-section {
+            margin-top: 20px;
+            border-top: 1px solid #2A2018;
+            padding-top: 16px;
+        }
+        .ruby-section > label { margin-top: 0; color: #9A7BB8; }
+        .ruby-input-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .ruby-input-row input {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        .ruby-run-btn {
+            flex-shrink: 0;
+            background: linear-gradient(to bottom, #1A1228, #100C1C);
+            border: 1px solid #4A3878;
+            color: #9A7BC8;
+            cursor: pointer;
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            padding: 7px 14px;
+        }
+        .ruby-run-btn:hover { background: linear-gradient(to bottom, #241838, #1A1228); }
+        .ruby-run-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .ruby-output {
+            margin-top: 6px;
+            font-size: 0.72rem;
+            min-height: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            word-break: break-all;
+        }
+        .ruby-output.success { color: #60A870; }
+        .ruby-output.error   { color: #B04040; }
+        .ruby-score-area {
+            display: none;
+            margin-top: 8px;
+            padding: 8px 10px;
+            background: rgba(30,20,50,0.6);
+            border: 1px solid #3A2860;
+            font-size: 0.75rem;
+            color: #8A6BA8;
+        }
+        .ruby-score-area .score-val {
+            font-family: 'JetBrains Mono', monospace;
+            color: #78C888;
+            font-size: 0.9rem;
+        }
+        .ruby-submit-btn {
+            margin-top: 6px;
+            width: 100%;
+            background: linear-gradient(to bottom, #1A2810, #101C08);
+            border: 1px solid #3A6828;
+            color: #78B848;
+            cursor: pointer;
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            padding: 6px;
+        }
+        .ruby-submit-btn:hover { background: linear-gradient(to bottom, #243818, #182810); }
+        .ruby-submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        /* ── ② loading pulse ── */
+        @keyframes pulse-loading { 0%,100%{opacity:0.55;} 50%{opacity:1;} }
+        .ruby-output.loading { color: #5A5030; animation: pulse-loading 1s ease-in-out infinite; }
+
+        /* ── ⑤ ヒント例 ── */
+        .ruby-examples { margin-top: 8px; }
+        .ruby-examples summary {
+            font-size: 0.67rem; color: #5A4A70; cursor: pointer;
+            letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace;
+            list-style: none; user-select: none;
+        }
+        .ruby-examples summary::-webkit-details-marker { display: none; }
+        .ruby-examples summary:hover { color: #9A7BC8; }
+        .ruby-examples[open] summary { color: #8A6AB8; margin-bottom: 4px; }
+        .ruby-examples-body { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+        .ruby-example-btn {
+            background: rgba(30,20,50,0.4); border: 1px solid #3A2860;
+            color: #7A6AA0; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem; padding: 4px 8px; cursor: pointer;
+            text-align: left; border-radius: 2px; transition: background 0.15s;
+        }
+        .ruby-example-btn:hover { background: rgba(50,30,80,0.55); color: #A890D0; }
+
+        /* ── ④ ランキングリンク ── */
+        .ranking-link-area { display: none; text-align: center; margin-top: 8px; }
+        .ranking-link-area a {
+            color: #78B870; font-size: 0.75rem; letter-spacing: 0.1em;
+            text-decoration: none; border-bottom: 1px solid #3A5820;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .ranking-link-area a:hover { color: #A0D890; }
+
+        /* ── ⑥ ミニ軍勢メーター ── */
+        .battle-meter-mini {
+            display: flex; align-items: center; gap: 7px;
+            margin: 10px 0 6px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.64rem;
+        }
+        .bm-side-w { color: #6ECFE8; flex-shrink: 0; min-width: 44px; }
+        .bm-side-e { color: #F8C010; flex-shrink: 0; min-width: 44px; text-align: right; }
+        .bm-bar-wrap {
+            flex: 1; height: 6px; background: rgba(184,32,16,0.28);
+            border: 1px solid #2A1808; position: relative; overflow: hidden;
+        }
+        .bm-bar {
+            position: absolute; left: 0; top: 0; bottom: 0;
+            background: rgba(16,96,184,0.6); border-right: 1px solid #6ECFE8;
+            transition: width 1.4s cubic-bezier(0.25,0.46,0.45,0.94); width: 50%;
+        }
+        .battle-flash {
+            font-size: 0.65rem; font-family: 'JetBrains Mono', monospace;
+            text-align: center; height: 1.1em; opacity: 0;
+            transition: opacity 0.35s; letter-spacing: 0.05em;
+        }
+        .battle-flash.active { opacity: 1; }
+        .battle-flash.flash-west { color: #6ECFE8; }
+        .battle-flash.flash-east { color: #F8C010; }
+
+        .ruby-hint {
+            font-size: 0.67rem;
+            color: #7A6A50;
+            margin-top: 5px;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.7;
+        }
+
+        /* ── 言語切替 ── */
+        .lang-toggle {
+            position: fixed;
+            top: 10px; right: 14px;
+            z-index: 200;
+            display: flex;
+            gap: 2px;
+        }
+        .lang-btn {
+            background: rgba(16,13,8,0.85);
+            border: 1px solid var(--gold);
+            color: var(--gold-light);
+            font-size: 0.68rem;
+            padding: 4px 9px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.08em;
+            transition: background 0.15s, color 0.15s;
+            backdrop-filter: blur(4px);
+        }
+        .lang-btn.active {
+            background: var(--gold);
+            color: #100D08;
+            font-weight: bold;
+        }
+
+        /* ── レスポンシブ ── */
+        @media (max-width: 760px) {
+            body {
+                overflow-x: hidden;
+                margin: 0;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 24px;
+                padding: 0 12px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .controls {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .container > div:last-child {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .action-btns {
+                width: 100% !important;
+            }
+            /* iOSのフォント自動拡大を防ぐ (16px未満だとSafariが自動ズームする) */
+            input, select, textarea,
+            .ruby-input-row input {
+                font-size: 16px;
+            }
+            .site-title {
+                font-size: 0.82rem;
+                letter-spacing: 0.15em;
+                padding: 8px 12px;
+                text-align: center;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn_lang_ja">JP</button>
+  <button class="lang-btn" id="btn_lang_en">EN</button>
+</div>
+<div class="site-title" data-i18n="siteTitle">天下分け目の算法合戦</div>
+
+<div class="container">
+    <!-- 左：操作パネル -->
+    <div class="controls">
+        <h2 data-i18n="formTitle">出 陣 の 支 度</h2>
+
+        <div class="field-group" id="fg_side">
+            <label data-i18n="labelSide">所 属 陣 営</label>
+            <select id="input_side">
+                <option value="west" data-i18n="optWest">西 軍</option>
+                <option value="east" data-i18n="optEast">東 軍</option>
+            </select>
+        </div>
+
+        <div class="field-group" id="fg_name">
+            <label data-i18n="labelName">武 将 名</label>
+            <input type="text" id="input_name" value="せきがはら るびゑもん" maxlength="15">
+        </div>
+
+        <div class="field-group" id="fg_github">
+            <label>GitHub ID</label>
+            <!-- ログイン前 -->
+            <button id="btn_github_login" class="btn-github-login" data-i18n="btnGithubLogin">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                <span data-i18n="btnGithubLogin">GitHub でログイン</span>
+            </button>
+            <!-- ログイン後（認証済み表示） -->
+            <div id="github_verified_row" class="github-verified-row" style="display:none">
+                <span class="github-id-verified" id="github_verified_id"></span>
+                <span class="verified-badge" data-i18n="githubVerified">✓ 本人確認済</span>
+                <button id="btn_github_logout" class="btn-github-logout" data-i18n="btnGithubLogout">ログアウト</button>
+            </div>
+            <!-- カード描画・既存コードが参照する隠しフィールド -->
+            <input type="text" id="input_github" style="display:none">
+        </div>
+
+        <div class="field-group" id="fg_warcry">
+            <div class="war-cry-container">
+                <label><span data-i18n="labelWarcry">い ざ 、 名 乗 り を 上 げ よ</span> <button class="dice-btn" id="dice_btn">🎲</button></label>
+                <textarea id="input_warcry" rows="4" maxlength="60">いざ、出陣！</textarea>
+                <div class="warcry-count" id="warcry_count">7 / 60</div>
+            </div>
+        </div>
+
+        <div class="field-group" id="fg_ruby">
+            <div class="ruby-section">
+                <label><span data-i18n="labelBattle">⚔️ 算法合戦</span> <span class="live-badge">LIVE</span></label>
+                <div class="battle-meter-mini">
+                    <span class="bm-side-w"><span data-i18n="bmWest">西</span> <span id="bm_west_pct">-</span></span>
+                    <div class="bm-bar-wrap"><div class="bm-bar" id="bm_bar"></div></div>
+                    <span class="bm-side-e"><span id="bm_east_pct">-</span> <span data-i18n="bmEast">東</span></span>
+                </div>
+                <div class="battle-flash" id="battle_flash"></div>
+                <div class="ruby-input-row">
+                    <input type="text" id="input_ruby" placeholder='9**99' maxlength="60">
+                    <button class="ruby-run-btn" id="btn_ruby_run" data-i18n="btnRun">実 行</button>
+                </div>
+                <details class="ruby-examples">
+                    <summary data-i18n="examplesSummary">▸ コードの例を見る</summary>
+                    <div class="ruby-examples-body">
+                        <button class="ruby-example-btn" data-code="9**99" data-i18n="ex1">9**99 → 9の99乗</button>
+                        <button class="ruby-example-btn" data-code="9**9**9" data-i18n="ex2">9**9**9 → さらに桁違い</button>
+                        <button class="ruby-example-btn" data-code="2**2**2**2**2" data-i18n="ex3">2**2**2**2**2 → 超天文学的な数</button>
+                        <button class="ruby-example-btn" data-code="9**9**99" data-i18n="ex4">9**9**99 → 軍勢を圧倒する規模</button>
+                    </div>
+                </details>
+                <div id="ruby_output" class="ruby-output"></div>
+                <div id="ruby_score_area" class="ruby-score-area">
+                    <div id="score_label_row"><span data-i18n="scoreLabel">スコア:</span> <span id="ruby_score_val" class="score-val"></span> <span data-i18n="scoreSuffix">pt/字</span></div>
+                    <button id="btn_submit_score" class="ruby-submit-btn" data-i18n="btnSubmit">🏆 ランキングに登録</button>
+                </div>
+                <div class="ranking-link-area" id="ranking_link_area">
+                    <a href="ranking.html" target="_blank" id="ranking_link" data-i18n="rankingLink">▶ ランキングを確認する</a>
+                </div>
+                <div class="ruby-hint" data-i18n-html="hint">
+                    コードで軍勢を増強せよ &nbsp;／&nbsp; スコア = 結果 ÷ 文字数
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 右：カード＋ボタン -->
+    <div>
+        <div class="card-wrapper">
+        <div id="card">
+            <div class="card-frame"></div>
+            <div class="corner corner-tl"></div>
+            <div class="corner corner-tr"></div>
+            <div class="corner corner-bl"></div>
+            <div class="corner corner-br"></div>
+            <div class="side-label" id="card_side">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0;opacity:0.85"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                <span id="card_side_text">github_id</span>
+            </div>
+            <div class="card-name-display" id="card_name">せきがはら るびゑもん</div>
+
+            <div id="rank_badge" class="rank-badge"></div>
+            <div class="card-body">
+                <div class="armor-stage">
+                    <div class="side-deco-left" id="card_side_deco">西軍</div>
+                    <canvas id="warrior_canvas" width="640" height="360"></canvas>
+                </div>
+                <div class="info-strip">
+                    <div class="info-main">
+                        <div class="warcry-box" id="card_warcry">
+                            <span class="warcry-deco-open" data-i18n="warcryOpen">「</span>
+                            <span id="card_warcry_text">いざ、出陣！</span>
+                            <span class="warcry-deco-close" data-i18n="warcryClose">」</span>
+                        </div>
+                        <div class="github-bar">
+                            <span class="github-bar-id"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        </div><!-- /.card-wrapper -->
+
+        <div class="action-btns">
+            <button class="btn-main" id="btn_generate" data-i18n="btnShare">い ざ 、 𝕏 で シ ェ ア ！</button>
+            <div id="download_area">
+                <p data-i18n="cardReady">── 写しが完成いたした ──</p>
+                <img id="final_image" style="width:100%; border:1px solid #3A3020;">
+                <div class="dl-btns">
+                    <a id="btn_download" class="btn-download" download="busho_card.png">💾 ダ ウ ン ロ ー ド</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── 定数 ──────────────────────────────────────────────
+const W_W = 640, W_H = 360;  // warrior_canvas の内部サイズ（16:9）
+
+const CHROMA    = { r: 0, g: 195, b: 228 };
+const CHROMA_TOL = 72;
+
+const WARRIOR_SRC = {
+    east: { sx: 0.0, sy: 0.0, sw: 1.0, sh: 1.0 },
+    west: { sx: 0.0, sy: 0.0, sw: 1.0, sh: 1.0 },
+};
+
+const FACE_CFG = {
+    east: { xR: 0.400, yR: 0.400, rR: 0.066, shearX: -0.050, shearY: 0.110, scaleY: 1.000 },
+    west: { xR: 0.400, yR: 0.405, rR: 0.070, shearX: -0.060, shearY: 0.110, scaleY: 1.000 },
+};
+
+const WARRIOR_CFG = {
+    east: { x: 210, y: 0, h: 330 },
+    west: { x: 210, y: 0, h: 330 },
+};
+
+// ── 画像読み込み ──────────────────────────────────────
+const SRC  = { diorama: 'diorama.png?v=4', east: 'busho_east.png?v=2', west: 'busho_west.png?v=2' };
+// 前景レイヤー（つば・えり）: ファイルが存在すれば自動的に使用
+const SRC_FRONT = { east_front: 'busho_east_front.png', west_front: 'busho_west_front.png' };
+const imgs = {};
+let loadedCount = 0;
+
+for (const [key, url] of Object.entries(SRC)) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => { imgs[key] = img; if (++loadedCount === 3) init(); };
+    img.src = url;
+}
+// 前景レイヤーはオプション（存在しなくてもエラーにしない）
+for (const [key, url] of Object.entries(SRC_FRONT)) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => { imgs[key] = img; scheduleRender(); };
+    img.src = url;
+}
+
+// ── クロマキー ────────────────────────────────────────
+const chromaCache = {};
+
+function chromaKey(img, key) {
+    if (chromaCache[key]) return chromaCache[key];
+    const oc = document.createElement('canvas');
+    oc.width = img.naturalWidth; oc.height = img.naturalHeight;
+    const cx = oc.getContext('2d');
+    cx.drawImage(img, 0, 0);
+    const id = cx.getImageData(0, 0, oc.width, oc.height);
+    const d = id.data;
+    const tolSq = CHROMA_TOL * CHROMA_TOL;
+    for (let i = 0; i < d.length; i += 4) {
+        const dr = d[i]-CHROMA.r, dg = d[i+1]-CHROMA.g, db = d[i+2]-CHROMA.b;
+        const sq = dr*dr + dg*dg + db*db;
+        if (sq < tolSq) d[i+3] = Math.round((sq / tolSq) * 180);
+    }
+    cx.putImageData(id, 0, 0);
+    chromaCache[key] = oc;
+    return oc;
+}
+
+// ── アバター読み込み ──────────────────────────────────
+let avatarImg = null;
+let avatarTimer = null;
+
+// input_github は Firebase Auth が管理するため手入力リスナーは不要
+
+// ── テキスト更新 ──────────────────────────────────────
+function updateText() {
+    document.getElementById('card_name').textContent = document.getElementById('input_name').value;
+    const warcry = document.getElementById('input_warcry').value;
+    document.getElementById('card_warcry_text').textContent = warcry;
+    const cnt = document.getElementById('warcry_count');
+    cnt.textContent = `${warcry.length} / 60`;
+    cnt.className = 'warcry-count' + (warcry.length > 55 ? ' over' : '');
+    const box = document.getElementById('card_warcry');
+    box.className = warcry.length > 45 ? 'warcry-box very-long' : warcry.length > 28 ? 'warcry-box long' : 'warcry-box';
+}
+
+function updateSideLabel(id) {
+    const githubId = id !== undefined ? id : document.getElementById('input_github').value.trim();
+    const sideLabel = document.getElementById('card_side');
+    sideLabel.style.display = githubId ? '' : 'none';
+    document.getElementById('card_side_text').textContent = githubId;
+}
+
+function updateSide() {
+    const side = document.getElementById('input_side').value;
+    const isWest = side === 'west';
+    document.getElementById('card_side_deco').textContent = isWest ? t('cardSideWest') : t('cardSideEast');
+    const color = isWest ? '#0E2040' : '#7D2200';
+    document.documentElement.style.setProperty('--side-color', color);
+    updateSideLabel();
+    scheduleRender();
+}
+
+// ── レンダリング ──────────────────────────────────────
+let rafId = null;
+let _shimmerPhase = 0;   // 0→1 で帯が左→右に掃引、1以上は画面外（待機中）
+let _shimmerTime  = 0;   // サイクル内の経過ms
+let _shimmerAnimId = null;
+const SHIMMER_CYCLE = 7000;  // 周期 7秒
+const SHIMMER_SWEEP = 550;   // 掃引にかかるms（速い）
+
+function makeStatusFanSVG(statusText, colorMode) {
+    const PX = 60, PY = 76, R = 72;
+    const A0 = 200, A1 = 340;
+    const pt = a => {
+        const r = a * Math.PI / 180;
+        return [(PX + R * Math.cos(r)).toFixed(1), (PY + R * Math.sin(r)).toFixed(1)];
+    };
+    const [lx, ly] = pt(A0);
+    const [rx, ry] = pt(A1);
+    const ribs = Array.from({length: 10}, (_, i) => {
+        const [ex, ey] = pt(A0 + (A1 - A0) * i / 9);
+        return `<line x1="${PX}" y1="${PY}" x2="${ex}" y2="${ey}"/>`;
+    }).join('');
+
+    let c0, c1, c2, glow;
+    if      (colorMode === 'west') { c0='#0A1E40'; c1='#1060B8'; c2='#6ECFE8'; glow='rgba(16,96,184,0.55)'; }
+    else if (colorMode === 'east') { c0='#5A0A00'; c1='#B82010'; c2='#F8C010'; glow='rgba(184,50,10,0.55)'; }
+    else                           { c0='#2A1E08'; c1='#6A5020'; c2='#C9A84C'; glow='rgba(100,80,20,0.45)'; }
+
+    const fs = statusText.length >= 5 ? 13 : 15;
+    const labelY = (PY - R * 0.68).toFixed(1);
+    const ty     = (PY - R * 0.38).toFixed(1);
+
+    return `<svg viewBox="-12 0 144 78" width="144" height="78" xmlns="http://www.w3.org/2000/svg"
+      style="filter:drop-shadow(0 4px 10px ${glow})">
+      <defs>
+        <linearGradient id="fg" x1="30%" y1="100%" x2="70%" y2="0%">
+          <stop offset="0%" stop-color="${c0}"/>
+          <stop offset="55%" stop-color="${c1}"/>
+          <stop offset="100%" stop-color="${c2}"/>
+        </linearGradient>
+        <filter id="ts"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="rgba(0,0,0,0.75)"/></filter>
+      </defs>
+      <path d="M${PX},${PY} L${lx},${ly} A${R},${R} 0 0,1 ${rx},${ry} Z" fill="url(#fg)"/>
+      <g stroke="rgba(255,255,255,0.22)" stroke-width="0.7">${ribs}</g>
+      <circle cx="${PX}" cy="${PY}" r="5" fill="${c0}" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>
+      <rect x="${PX - 30}" y="${(parseFloat(labelY) - 7).toFixed(1)}" width="60" height="13" rx="2"
+        fill="rgba(0,0,0,0.45)"/>
+      <text x="${PX}" y="${labelY}"
+        text-anchor="middle" dominant-baseline="middle"
+        font-family="'Sawarabi Mincho', serif"
+        font-size="9" fill="rgba(255,255,255,0.95)"
+        letter-spacing="3">'+t('battleLabel')+'</text>
+      <text x="${PX}" y="${ty}"
+        text-anchor="middle" dominant-baseline="middle"
+        font-family="'Sawarabi Mincho', serif"
+        font-size="${fs}" fill="rgba(255,255,255,0.95)" filter="url(#ts)">${statusText}</text>
+    </svg>
+    <div class="rank-badge-caption" style="background:rgba(0,0,0,0.55);padding:2px 8px;border-radius:3px;">"+t('statusBoost')+"</div>`;
+}
+
+function makeRankFanSVG(rank) {
+    const PX = 60, PY = 76, R = 72;
+    const A0 = 200, A1 = 340;
+    const pt = a => {
+        const r = a * Math.PI / 180;
+        return [(PX + R * Math.cos(r)).toFixed(1), (PY + R * Math.sin(r)).toFixed(1)];
+    };
+    const [lx, ly] = pt(A0);
+    const [rx, ry] = pt(A1);
+
+    const ribs = Array.from({length: 10}, (_, i) => {
+        const [ex, ey] = pt(A0 + (A1 - A0) * i / 9);
+        return `<line x1="${PX}" y1="${PY}" x2="${ex}" y2="${ey}"/>`;
+    }).join('');
+
+    let c0, c1, c2, glow;
+    if      (rank === 1) { c0='#7A5000'; c1='#C9A84C'; c2='#FFE566'; glow='rgba(255,200,0,0.65)'; }
+    else if (rank === 2) { c0='#484848'; c1='#A0A0A0'; c2='#E0E0E0'; glow='rgba(200,200,200,0.45)'; }
+    else if (rank === 3) { c0='#5A2800'; c1='#A85820'; c2='#E89060'; glow='rgba(180,100,30,0.5)'; }
+    else                 { c0='#2A1000'; c1='#6B4020'; c2='#A87050'; glow='rgba(0,0,0,0.35)'; }
+
+    const fs = rank >= 10 ? 17 : 20;
+    const labelY = (PY - R * 0.68).toFixed(1);
+    const ty     = (PY - R * 0.38).toFixed(1);
+
+    return `<svg viewBox="-12 0 144 78" width="144" height="78" xmlns="http://www.w3.org/2000/svg"
+      style="filter:drop-shadow(0 4px 10px ${glow})">
+      <defs>
+        <linearGradient id="fg" x1="30%" y1="100%" x2="70%" y2="0%">
+          <stop offset="0%" stop-color="${c0}"/>
+          <stop offset="55%" stop-color="${c1}"/>
+          <stop offset="100%" stop-color="${c2}"/>
+        </linearGradient>
+        <filter id="ts"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="rgba(0,0,0,0.75)"/></filter>
+      </defs>
+      <path d="M${PX},${PY} L${lx},${ly} A${R},${R} 0 0,1 ${rx},${ry} Z" fill="url(#fg)"/>
+      <g stroke="rgba(255,255,255,0.22)" stroke-width="0.7">${ribs}</g>
+      <circle cx="${PX}" cy="${PY}" r="5" fill="${c0}" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>
+      <rect x="${PX - 30}" y="${(parseFloat(labelY) - 7).toFixed(1)}" width="60" height="13" rx="2"
+        fill="rgba(0,0,0,0.45)"/>
+      <text x="${PX}" y="${labelY}"
+        text-anchor="middle" dominant-baseline="middle"
+        font-family="'Sawarabi Mincho', serif"
+        font-size="9" fill="rgba(255,255,255,0.95)"
+        letter-spacing="3">'+t('battleLabel')+'</text>
+      <text x="${PX}" y="${ty}"
+        text-anchor="middle" dominant-baseline="middle"
+        font-family="'Sawarabi Mincho', serif"
+        font-size="${fs}"
+        fill="rgba(255,255,255,0.95)"
+        filter="url(#ts)">第${rank}位</text>
+    </svg>`;
+}
+
+function startGoldShimmer() {
+    if (_shimmerAnimId) return;
+    let lastT = null;
+    function tick(t) {
+        if (lastT !== null) _shimmerTime += t - lastT;
+        lastT = t;
+        const pos = _shimmerTime % SHIMMER_CYCLE;
+        _shimmerPhase = pos < SHIMMER_SWEEP ? pos / SHIMMER_SWEEP : 2; // 2=画面外
+        render();
+        _shimmerAnimId = requestAnimationFrame(tick);
+    }
+    _shimmerAnimId = requestAnimationFrame(tick);
+}
+function stopGoldShimmer() {
+    if (_shimmerAnimId) { cancelAnimationFrame(_shimmerAnimId); _shimmerAnimId = null; }
+    _shimmerPhase = 2;
+    _shimmerTime  = 0;
+    render();
+}
+function scheduleRender() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(render);
+}
+
+function render() {
+    const canvas = document.getElementById('warrior_canvas');
+    const ctx = canvas.getContext('2d');
+    const side = document.getElementById('input_side').value;
+
+    ctx.clearRect(0, 0, W_W, W_H);
+
+    // ① 背景グラデーション（トップ10はゴールド、それ以外は陣営別）
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, W_H);
+    if (_currentRank !== null && _currentRank <= 10) {
+        bgGrad.addColorStop(0,    '#3D2800');
+        bgGrad.addColorStop(0.3,  '#8B5E00');
+        bgGrad.addColorStop(0.6,  '#C9960A');
+        bgGrad.addColorStop(1,    '#FFE066');
+    } else if (side === 'west') {
+        // 夏空：鮮やかな青から明るいシアンへ
+        bgGrad.addColorStop(0,    '#1060B8');
+        bgGrad.addColorStop(0.45, '#1A9FD0');
+        bgGrad.addColorStop(1,    '#6ECFE8');
+    } else {
+        // 曙：明るい桜色→温かいピーチ→爽やかな黄金
+        bgGrad.addColorStop(0,    '#B82010');
+        bgGrad.addColorStop(0.28, '#E86010');
+        bgGrad.addColorStop(1,    '#F8C010');
+    }
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W_W, W_H);
+
+    // ①b メタリックシマー（ジオラマより下レイヤー、掃引中のみ）
+    if (_currentRank !== null && _currentRank <= 10 && _shimmerPhase <= 1) {
+        const x = -W_W * 0.3 + _shimmerPhase * W_W * 1.6;
+        const sg = ctx.createLinearGradient(x, W_H * 0.85, x + W_W * 0.3, 0);
+        sg.addColorStop(0,    'rgba(255,255,200,0)');
+        sg.addColorStop(0.35, 'rgba(255,248,160,0.55)');
+        sg.addColorStop(0.5,  'rgba(255,255,240,0.90)');
+        sg.addColorStop(0.65, 'rgba(255,248,160,0.55)');
+        sg.addColorStop(1,    'rgba(255,255,200,0)');
+        ctx.save();
+        ctx.fillStyle = sg;
+        ctx.fillRect(0, 0, W_W, W_H);
+        ctx.restore();
+    }
+
+    // ② ジオラマ（透過PNG）
+    if (imgs.diorama) {
+        const dW = imgs.diorama.naturalWidth, dH = imgs.diorama.naturalHeight;
+        // W_W:W_H の比率に合わせてクロップ
+        const targetAspect = W_W / W_H;
+        const srcAspect = dW / dH;
+        let sx, sy, sw, sh;
+        if (srcAspect > targetAspect) {
+            sh = dH; sw = dH * targetAspect;
+            sx = (dW - sw) / 2; sy = 0;
+        } else {
+            sw = dW; sh = dW / targetAspect;
+            sx = 0; sy = (dH - sh) / 2;
+        }
+        ctx.drawImage(imgs.diorama, sx, sy, sw, sh, 0, 0, W_W, W_H);
+    }
+
+    // ③ 武将（クロマキー＋クロップ）
+    if (imgs[side]) {
+        const keyed = chromaKey(imgs[side], side);
+        const wc = WARRIOR_CFG[side];
+        const sc = WARRIOR_SRC[side];
+        const srcW = imgs[side].naturalWidth, srcH = imgs[side].naturalHeight;
+        const cropX = sc.sx * srcW, cropY = sc.sy * srcH;
+        const cropW = sc.sw * srcW, cropH = sc.sh * srcH;
+        const aspect = cropW / cropH;
+        const drawH = wc.h, drawW = drawH * aspect;
+        ctx.drawImage(keyed, cropX, cropY, cropW, cropH, wc.x, wc.y, drawW, drawH);
+
+        // ④ 顔ハメ（四角＋シアー）
+        if (avatarImg) {
+            const fc = FACE_CFG[side];
+            const faceX = wc.x + fc.xR * drawW;
+            const faceY = wc.y + fc.yR * drawH;
+            const s = fc.rR * drawH;
+            ctx.save();
+            ctx.translate(faceX, faceY);
+            ctx.transform(1, fc.shearY, fc.shearX, fc.scaleY, 0, 0);
+            // 武将画像に焼き込まれたGitHubアイコンをクリップ外も含めて隠す下塗り
+            // アバターの透過部分からアイコン端が見えないよう、少し大きめに塗る
+            const cover = s * 1.02 - 1;
+            ctx.shadowColor = 'rgba(0,0,0,0.45)';
+            ctx.shadowBlur = 5;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 3;
+            ctx.fillStyle = '#F5F0E8';
+            ctx.fillRect(-cover, -cover, cover * 2, cover * 2);
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            // アバターをクリップして描画
+            ctx.beginPath();
+            ctx.rect(-s, -s, s * 2, s * 2);
+            ctx.clip();
+            ctx.drawImage(avatarImg, -s, -s, s * 2, s * 2);
+            ctx.restore();
+
+            // ⑤ 前景レイヤー（つば・えり）があれば上に重ねる
+            const frontKey = side + '_front';
+            if (imgs[frontKey]) {
+                ctx.drawImage(imgs[frontKey], cropX, cropY, cropW, cropH, wc.x, wc.y, drawW, drawH);
+            }
+        }
+    }
+}
+
+// ── 出陣（canvas 直接描画でエクスポート） ─────────────
+function buildExportCanvas() {
+    const SCALE = 2.5;
+    const CW = 480, WH = 340, STRIP_H = 103, CH = WH + STRIP_H;
+    const INK = '#1C1510', GOLD = '#9A7B1A', GOLD_L = '#C9A84C';
+    const sideColor = getComputedStyle(document.documentElement).getPropertyValue('--side-color').trim();
+
+    const ec = document.createElement('canvas');
+    ec.width = Math.round(CW * SCALE);
+    ec.height = Math.round(CH * SCALE);
+    const c = ec.getContext('2d');
+    c.scale(SCALE, SCALE);
+
+    // 1. 紙背景
+    const grad = c.createLinearGradient(0, 0, 0, CH);
+    grad.addColorStop(0, 'rgba(235,224,176,0.92)');
+    grad.addColorStop(1, 'rgba(210,192,125,0.92)');
+    c.fillStyle = grad;
+    c.fillRect(0, 0, CW, CH);
+
+    // 2. 武将キャンバス
+    c.drawImage(document.getElementById('warrior_canvas'), 0, 0, CW, WH);
+
+    // 3. 情報帯の区切り線
+    c.strokeStyle = 'rgba(154,123,26,0.3)'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(0, WH); c.lineTo(CW, WH); c.stroke();
+
+    // 4. 名乗りボックス
+    const warcryText = document.getElementById('card_warcry_text').textContent;
+    const WBX = 14, WBY = WH + 10, WBW = CW - 28, WBH = 54;
+    c.fillStyle = 'rgba(235,224,176,0.72)';
+    c.beginPath(); c.roundRect(WBX, WBY, WBW, WBH, 4); c.fill();
+    c.font = `16px 'Sawarabi Mincho', serif`;
+    c.fillStyle = INK; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(warcryText, CW / 2, WBY + WBH / 2, WBW - 48);
+    c.font = `22px serif`; c.fillStyle = 'rgba(154,123,26,0.2)';
+    c.textBaseline = 'top'; c.textAlign = 'left'; c.fillText('「', WBX + 4, WBY);
+    c.textBaseline = 'bottom'; c.textAlign = 'right'; c.fillText('」', WBX + WBW - 4, WBY + WBH);
+
+    // 5. 開催日帯
+    const GBY = WBY + WBH + 6;
+    c.strokeStyle = 'rgba(154,123,26,0.28)'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(14, GBY); c.lineTo(CW - 14, GBY); c.stroke();
+    c.font = `12px 'JetBrains Mono', monospace`;
+    c.fillStyle = 'rgba(58,45,30,0.7)'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('2026 05 30', CW / 2, GBY + 12);
+
+    // 6. 陣営ラベル（上部台形バッジ）—— GitHub ID 未入力時は非表示
+    const sideText = document.getElementById('card_side_text').textContent;
+    if (sideText) {
+        c.font = `bold 14px 'Sawarabi Mincho', serif`;
+        const labelTextW = c.measureText(sideText).width;
+        const ICON_W = 13, GAP = 5, PAD_L = 10, PAD_R = 26;
+        const LW = PAD_L + ICON_W + GAP + labelTextW + PAD_R, LH = 28, LT = 22;
+        c.fillStyle = sideColor;
+        c.beginPath(); c.moveTo(0,LT); c.lineTo(LW,LT); c.lineTo(LW-10,LT+LH); c.lineTo(0,LT+LH); c.closePath(); c.fill();
+        c.save();
+        c.fillStyle = '#F5E8C0'; c.globalAlpha = 0.85;
+        const IS = 11 / 16, IX = PAD_L, IY = LT + (LH - 11) / 2;
+        c.translate(IX, IY); c.scale(IS, IS);
+        c.beginPath();
+        c.fill(new Path2D('M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z'));
+        c.restore();
+        c.font = `bold 14px 'Sawarabi Mincho', serif`;
+        c.fillStyle = '#F5E8C0'; c.globalAlpha = 1; c.textAlign = 'left'; c.textBaseline = 'middle';
+        c.fillText(sideText, PAD_L + ICON_W + GAP, LT + LH / 2);
+    }
+
+    // 7. サイド装飾文字（透かし）
+    const decoText = document.getElementById('card_side_deco').textContent;
+    c.font = `bold 38px 'Yuji Mai', serif`;
+    c.fillStyle = 'rgba(154,123,26,0.18)';
+    c.textAlign = 'center'; c.textBaseline = 'top';
+    [...decoText].forEach((ch, i) => c.fillText(ch, 23, 50 + i * 42));
+
+    // 8. 武将名（縦書き・右）
+    const nameText = document.getElementById('card_name').textContent;
+    const nameChars = [...nameText];
+    const CH_H = 26, NW = 26, NX = CW - 36, NY = 48;
+    c.fillStyle = 'rgba(235,224,176,0.55)';
+    c.fillRect(NX, NY, NW, nameChars.length * CH_H + 8);
+    c.font = `21px 'Yuji Mai', serif`;
+    c.fillStyle = INK; c.textAlign = 'center'; c.textBaseline = 'top';
+    nameChars.forEach((ch, i) => c.fillText(ch, NX + NW / 2, NY + 4 + i * CH_H));
+
+    // 11. 内枠
+    c.strokeStyle = 'rgba(154,123,26,0.38)'; c.lineWidth = 1;
+    c.strokeRect(14, 14, CW - 28, CH - 28);
+
+    // 12. 四隅
+    c.strokeStyle = GOLD_L; c.lineWidth = 2; c.globalAlpha = 0.65;
+    [[16,16,1,1],[CW-16,16,-1,1],[16,CH-16,1,-1],[CW-16,CH-16,-1,-1]].forEach(([x,y,dx,dy]) => {
+        c.beginPath(); c.moveTo(x,y+dy*18); c.lineTo(x,y); c.lineTo(x+dx*18,y); c.stroke();
+    });
+    c.globalAlpha = 1;
+
+    // 12b. 順位バッジ
+    if (_currentRank !== null) {
+        const rankLabel = `#${_currentRank}位`;
+        c.font = `bold 13px 'JetBrains Mono', monospace`;
+        const tw = c.measureText(rankLabel).width;
+        const RX = 20, RY = WH - 36, RW = tw + 24, RH = 22;
+        c.fillStyle = 'rgba(8,6,18,0.82)';
+        c.beginPath(); c.roundRect(RX, RY, RW, RH, 3); c.fill();
+        c.strokeStyle = 'rgba(201,168,76,0.65)'; c.lineWidth = 1;
+        c.beginPath(); c.roundRect(RX, RY, RW, RH, 3); c.stroke();
+        c.font = `11px serif`;
+        c.fillStyle = '#C9A84C'; c.textAlign = 'left'; c.textBaseline = 'middle';
+        c.fillText('💻', RX + 5, RY + RH / 2);
+        c.font = `bold 13px 'JetBrains Mono', monospace`;
+        c.fillStyle = '#E8D490';
+        c.fillText(rankLabel, RX + 19, RY + RH / 2);
+    }
+
+    // 13. 外枠（金枠）
+    c.strokeStyle = INK; c.lineWidth = 3; c.strokeRect(1.5, 1.5, CW-3, CH-3);
+    c.strokeStyle = GOLD; c.lineWidth = 7; c.strokeRect(5, 5, CW-10, CH-10);
+    c.strokeStyle = INK; c.lineWidth = 3; c.strokeRect(12, 12, CW-24, CH-24);
+
+    return ec;
+}
+
+document.getElementById('btn_generate').addEventListener('click', () => {
+    const btn = document.getElementById('btn_generate');
+    btn.disabled = true; btn.textContent = t('generating');
+    htmlToImage.toPng(document.getElementById('card'), { pixelRatio: 2.5, cacheBust: true })
+        .then(dataUrl => {
+            document.getElementById('final_image').src = dataUrl;
+            document.getElementById('btn_download').href = dataUrl;
+            document.getElementById('download_area').style.display = 'block';
+            document.getElementById('download_area').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // X へシェア
+            const name   = document.getElementById('card_name').textContent;
+            const side   = document.getElementById('card_side_deco').textContent;
+            const warcry = document.getElementById('card_warcry_text').textContent;
+            const text   = t('shareText')(side, name, warcry);
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile && navigator.canShare) {
+                fetch(dataUrl).then(r => r.blob()).then(blob => {
+                    const file = new File([blob], 'busho_card.png', { type: 'image/png' });
+                    if (navigator.canShare({ files: [file] })) {
+                        navigator.share({ text, files: [file] }).catch(() => {});
+                        return;
+                    }
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                });
+            } else {
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+            }
+        })
+        .catch(e => alert('生成に失敗しました: ' + e.message))
+        .finally(() => { btn.disabled = false; btn.textContent = t('btnShare'); });
+});
+
+// ── 多言語対応 ───────────────────────────────────────
+const LANG = {
+    ja: {
+        siteTitle: '天下分け目の算法合戦',
+        pageTitle:  '天下分け目の算法合戦',
+        formTitle: '出 陣 の 支 度',
+        labelSide: '所 属 陣 営', optWest: '西 軍', optEast: '東 軍',
+        labelName: '武 将 名', labelWarcry: 'い ざ 、 名 乗 り を 上 げ よ',
+        labelBattle: '⚔️ 算法合戦',
+        bmWest: '西', bmEast: '東',
+        btnRun: '実 行',
+        examplesSummary: '▸ コードの例を見る',
+        ex1: '9**99 → 9の99乗', ex2: '9**9**9 → さらに桁違い',
+        ex3: '2**2**2**2**2 → 超天文学的な数', ex4: '9**9**99 → 軍勢を圧倒する規模',
+        scoreLabel: 'スコア:', scoreSuffix: 'pt/字',
+        btnSubmit: '🏆 ランキングに登録', rankingLink: '▶ ランキングを確認する',
+        hint: 'コードで軍勢を増強せよ &nbsp;／&nbsp; スコア = 結果 ÷ 文字数',
+        btnShare: 'い ざ 、 𝕏 で シ ェ ア ！',
+        generating: '生 成 中 …', cardReady: '── 写しが完成いたした ──',
+        cardSideWest: '西軍', cardSideEast: '東軍',
+        warcryOpen: '「', warcryClose: '」',
+        statusNeutral: '東西拮抗', statusWest: '西軍優勢', statusEast: '東軍優勢',
+        statusBoost: 'コードで軍勢を増強せよ！', battleLabel: '算法合戦',
+        flashWestTurn: '⚡ 西軍、逆転！', flashEastTurn: '⚡ 東軍、逆転！',
+        flashWestGain: '西軍が勢力を拡大！', flashEastGain: '東軍が追い上げる！',
+        loading: '⏳ ruby.wasm を召喚中… (初回のみ数秒かかります)',
+        running: '▶ 実行中...', mustReturnInt: '※正の整数を返すコードを書いてください',
+        digits: (n) => `${n}桁`,
+        errPrefix: 'エラー: ', registering: '登録中...',
+        registered: (r) => `✅ 登録！ 現在 ${r}位`,
+        rankingLinkRank: (r) => `▶ ランキングで ${r}位 を確認する`,
+        registerFail: '❌ 登録失敗', btnSubmitReset: '🏆 ランキングに登録',
+        btnGithubLogin: 'GitHub でログイン',
+        githubVerified: '✓ 本人確認済',
+        btnGithubLogout: 'ログアウト',
+        githubLoginRequired: '⚠️ GitHub でログインしてからランキングに登録できます',
+        shareText: (side, name, warcry) => `【天下分け目の算法合戦】\n${side}に参戦！\n武将名：${name}\n「${warcry}」\n#算法合戦 #RubyWarrior`,
+        defaultName: 'せきがはら るびゑもん',
+        noName: '名無し',
+    },
+    en: {
+        siteTitle: 'The Code Battle',
+        pageTitle:  'The Code Battle',
+        formTitle: 'P r e p a r e',
+        labelSide: 'F a c t i o n', optWest: 'West Army', optEast: 'East Army',
+        labelName: 'Warrior Name', labelWarcry: 'Your Battle Cry',
+        labelBattle: '⚔️ Code Battle',
+        bmWest: 'W', bmEast: 'E',
+        btnRun: 'Run',
+        examplesSummary: '▸ See code examples',
+        ex1: '9**99 → 9 to the 99th power', ex2: '9**9**9 → even larger',
+        ex3: '2**2**2**2**2 → astronomical number', ex4: '9**9**99 → overwhelming scale',
+        scoreLabel: 'Score:', scoreSuffix: 'pt/ch',
+        btnSubmit: '🏆 Join Ranking', rankingLink: '▶ View Ranking',
+        hint: 'Boost your army with code &nbsp;／&nbsp; Score = result ÷ chars',
+        btnShare: 'S h a r e  o n  𝕏 ！',
+        generating: 'Generating...', cardReady: '── Card ready ──',
+        cardSideWest: 'West', cardSideEast: 'East',
+        warcryOpen: '“', warcryClose: '”',
+        statusNeutral: 'Balanced', statusWest: 'West Leads', statusEast: 'East Leads',
+        statusBoost: 'Boost your forces with code!', battleLabel: 'Code Battle',
+        flashWestTurn: '⚡ West takes the lead!', flashEastTurn: '⚡ East takes the lead!',
+        flashWestGain: 'West is gaining ground!', flashEastGain: 'East is catching up!',
+        loading: '⏳ Loading ruby.wasm... (first time only, takes a few seconds)',
+        running: '▶ Running...', mustReturnInt: '※ Please write code that returns a positive integer',
+        digits: (n) => `${n} digits`,
+        errPrefix: 'Error: ', registering: 'Registering...',
+        registered: (r) => `✅ Registered! Rank #${r}`,
+        rankingLinkRank: (r) => `▶ Check Ranking — you are #${r}`,
+        registerFail: '❌ Registration failed', btnSubmitReset: '🏆 Join Ranking',
+        btnGithubLogin: 'Sign in with GitHub',
+        githubVerified: '✓ Verified',
+        btnGithubLogout: 'Sign out',
+        githubLoginRequired: '⚠️ Please sign in with GitHub to join the ranking',
+        shareText: (side, name, warcry) => `[The Code Battle]\nJoined ${side}!\nWarrior: ${name}\n"${warcry}"\n#CodeBattle #RubyWarrior`,
+        defaultName: 'sekigahara ruby-emon',
+        noName: 'Anonymous',
+    },
+};
+
+let _lang = localStorage.getItem('sekigahara_lang') || 'ja';
+function t(key) { return LANG[_lang][key] ?? LANG.ja[key]; }
+
+function applyLang(lang) {
+    _lang = lang;
+    localStorage.setItem('sekigahara_lang', lang);
+    document.getElementById('btn_lang_ja').classList.toggle('active', lang === 'ja');
+    document.getElementById('btn_lang_en').classList.toggle('active', lang === 'en');
+    document.title = t('pageTitle');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        el.innerHTML = t(el.dataset.i18nHtml);
+    });
+    // カード上の陣営テキスト更新
+    updateSide();
+}
+
+document.getElementById('btn_lang_ja').addEventListener('click', () => applyLang('ja'));
+document.getElementById('btn_lang_en').addEventListener('click', () => applyLang('en'));
+
+// ── サイコロ ──────────────────────────────────────────
+const MSGS = {
+    west: [
+        '一人は全Rubyistのために、全Rubyistは一人のために！',
+        '時代はPrism、我が眼光に解析できぬコードなどなし！',
+        '引数に名を付ける必要なし、itの一突きで十分よ！',
+        'たとえデプロイ直前であっても、Rubyの道を引き返すことは断じてなし！',
+        '不具合が何万といようとも、Rubyへの愛は崩せぬ！',
+        '泥を啜りてでも、お主のコード、最後まで見届けようぞ。',
+        '西軍の勝利を信じ、この身を捧げん！',
+        '型がなくとも心は通じる。動くコードこそが真の義なり！',
+        '一字一行、魂を込めて綴る。それが我が武士道なり！',
+        '散るならば、美しいコードと共に散らん！',
+        '権力に屈せず、書きたいように書く。それがRubyの自由よ！',
+        'このテストが通らねば、生きて門は潜らぬ覚悟！',
+        '読み手の笑顔こそ、我らが求める天下の宝なり！',
+        '仕様変更の嵐よ吹け。我がコードは微塵も揺るがぬ！',
+        'PicoRubyを手に、未開の地へとRubyの旗を立てん！',
+        'Rubyという名の義に殉じる、幸せな人生よ！',
+        '`gem`という名の知恵を世に撒き散らし、Rubyの恵みを広めん！',
+        '`nil`に返るその日まで、このコードを書き続けるが武士の本懐！',
+        '`yield`せよ！我が`block`、誰に渡されても必ず動いてみせる！',
+        '`method_missing`も恐れぬ。如何なる問いにも答えてみせよう！',
+        'Fiberの如く、止まっても再開できる。それが我が不屈の魂よ！',
+        '`def 義() = "Rubyと共にあり"` ── endless methodの如く、終わりなき義を宣言せん！',
+        '`attr_accessor :覚悟` ── 覚悟は読み書き自由。常に更新し続けよ！',
+    ],
+    east: [
+        'エンジニアの道は、重きRailsを負うて遠き道を行くが如し。',
+        'YJITの加護を受けた我が進軍、もはや誰にも止められぬ！',
+        '構文エラーという名の刺客、Prismの盾がすべて弾き返してくれるわ！',
+        '五十七度のデプロイ、未だかつて本番障害を受けたことなし！',
+        '鳴かぬなら、壊してしまえ、既存コード。',
+        '仕様の城を築くなら、Rubyという不落の石垣を用いるべし！',
+        '天下のバグ、我が知略をもって一掃してくれよう。',
+        '型という名の強固な陣形、一糸乱れぬ守りこそが勝利の鍵なり！',
+        '急がば回れ。確実なテストこそが天下太平の礎なり！',
+        '三河の武士の如く、質実剛健なコードを積み上げん！',
+        '鳴かぬなら、鳴くまで待とう、並列処理。',
+        '勝利の方程式は、常にドキュメントの中にあり！',
+        '敵を知り、己を知れば、百戦して危うからず！',
+        '我が軍に退却の文字なし。全テスト通過まで突き進め！',
+        'Kamalの船に乗り、コンテナの海へ覇を唱えん！',
+        'Rubyの旗の下に、秩序ある帝国を築き上げん！',
+        '`frozen_string_literal: true` ── 一度決めた方針、塗り替えることは断じて許さん！',
+        '`defined?(負け)` の返り値、我が陣では常に`nil`なり！',
+        '`Bundler`で依存を固め、万全の体制で臨む。これが東軍の流儀よ！',
+        '`case 天下; in 我が手 then "成就"; end` ── パターンはすでに決まっておる！',
+        '`rescue => e; retry` ── 何度転んでも立ち上がる、それが東軍の意地！',
+        '`ObjectSpace.each_object` ── この世全てのオブジェクトが我が目の届く範囲にあり！',
+        '鳴かぬなら、`fork`して鳴かせよ、ホトトギス。',
+    ],
+    west_en: [
+        'One for all Rubyists, and all for one!',
+        'Prism parses all — no syntax can hide from my sight!',
+        'No named arg needed — `it` alone is enough to strike!',
+        'Even on the eve of deploy, I shall not abandon the Ruby path!',
+        'No matter how many bugs arise, my love for Ruby cannot be broken!',
+        'Even in the mud, I shall see your code through to the very end.',
+        'I believe in the West Army\'s victory — I offer my very self!',
+        'Though types may be absent, hearts connect. Working code is true justice!',
+        'Every character, every line — written with soul. That is my warrior\'s code.',
+        'If I must fall, let me fall alongside beautiful code!',
+        'I write as I wish — that is the freedom Ruby gives us!',
+        'If this test fails, I shall not leave this battlefield alive!',
+        'The reader\'s smile is the greatest treasure in this land!',
+        'Let the storms of spec changes blow — my code shall not waver!',
+        'With PicoRuby in hand, I plant Ruby\'s banner on uncharted lands!',
+        'To give one\'s life to Ruby — what a truly blessed path!',
+        '`gem` — wisdom to scatter across the world, spreading Ruby\'s grace!',
+        'Until the day I return to `nil`, I shall keep writing this code!',
+        '`yield` — wherever my `block` is passed, it will always run!',
+        'I fear no `method_missing` — I shall answer any call that comes!',
+        'Like a Fiber — I can pause and resume. That is my unbreakable spirit!',
+        '`def truth() = "Ruby is with us"` — an endless method, an endless vow!',
+        '`attr_accessor :resolve` — resolve is always read-write. Keep updating it!',
+    ],
+    east_en: [
+        'The path of an engineer: carrying heavy Rails down a long, long road.',
+        'YJIT\'s blessing powers our advance — none can stop us now!',
+        'Syntax error assassins? Prism\'s shield deflects every single one!',
+        'Fifty-seven deploys — and not once have I suffered a production incident!',
+        'If it won\'t sing, break the old code and rewrite it.',
+        'To build the castle of requirements, use Ruby — the unbreakable stone wall!',
+        'The bugs of the realm — I shall sweep them all away with my strategy!',
+        'Types form an unbreakable formation — a flawless defense wins the war!',
+        'Make haste slowly. Solid tests are the foundation of lasting peace!',
+        'Like a Mikawa warrior — build code that is solid and deeply honest!',
+        'If it won\'t sing, wait for it — parallel processing always finds a way.',
+        'The formula for victory is always found within the documentation!',
+        'Know your enemy, know yourself — and you shall never lose a battle!',
+        'No retreat in my army. We charge forward until every test passes!',
+        'Board Kamal\'s ship — declare supremacy across the container sea!',
+        'Under Ruby\'s banner, we shall build an empire of order and precision!',
+        '`frozen_string_literal: true` — a decision once made is never rewritten!',
+        '`defined?(defeat)` — in my camp, it always, always returns `nil`!',
+        '`Bundler` locks all dependencies — this is the East Army\'s way!',
+        '`case world; in my_hands then "fulfilled"; end` — the pattern is already set!',
+        '`rescue => e; retry` — rise as many times as we fall. East Army pride!',
+        '`ObjectSpace.each_object` — every object in this world is within my sight!',
+        'If it won\'t sing, `fork` and make it sing — the cuckoo waits for no one.',
+    ],
+};
+
+document.getElementById('dice_btn').addEventListener('click', () => {
+    const side = document.getElementById('input_side').value;
+    const key = side + (_lang === 'en' ? '_en' : '');
+    const msgs = MSGS[key] || MSGS[side];
+    document.getElementById('input_warcry').value = msgs[Math.floor(Math.random() * msgs.length)];
+    updateText();
+});
+
+
+// ── カードスケール（レスポンシブ） ────────────────────
+function updateCardScale() {
+    const wrapper  = document.querySelector('.card-wrapper');
+    const card     = document.getElementById('card');
+    const btns     = document.querySelector('.action-btns');
+    // モバイルではcontrolsと同じ幅にカードを合わせる、PCは640px固定
+    const isMobile = window.innerWidth <= 760;
+    let maxW;
+    if (isMobile) {
+        const controls = document.querySelector('.controls');
+        maxW = Math.min(640, controls ? controls.offsetWidth : window.innerWidth - 48);
+    } else {
+        maxW = Math.min(640, window.innerWidth - 48);
+    }
+    if (maxW < 640) {
+        const scale = maxW / 640;
+        wrapper.style.width  = maxW + 'px';
+        wrapper.style.height = Math.round(360 * scale) + 'px';
+        wrapper.style.overflow = 'hidden';
+        card.style.transformOrigin = 'top left';
+        card.style.transform = `scale(${scale})`;
+        btns.style.width = maxW + 'px';
+    } else {
+        wrapper.style.width = wrapper.style.height = wrapper.style.overflow = '';
+        card.style.transform = '';
+        btns.style.width = '';
+    }
+}
+window.addEventListener('resize', updateCardScale);
+
+// ── Firebase ─────────────────────────────────────────
+const fbApp = firebase.initializeApp({
+    apiKey:            "AIzaSyAZw-gCUn6-14D6iK2qesUm7NLRGSm0e_s",
+    authDomain:        "sekigahara-card.firebaseapp.com",
+    databaseURL:       "https://sekigahara-card-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId:         "sekigahara-card",
+    storageBucket:     "sekigahara-card.firebasestorage.app",
+    messagingSenderId: "206009048073",
+    appId:             "1:206009048073:web:f164c33f3624511541acd8"
+});
+const fbDb   = firebase.database();
+const fbAuth = firebase.auth();
+
+// GitHub OAuth 認証
+let _fbUser = null;
+let _githubLogin = null;
+const _githubProvider = new firebase.auth.GithubAuthProvider();
+
+// GitHub ログインボタン
+document.getElementById('btn_github_login').addEventListener('click', async () => {
+    const btn = document.getElementById('btn_github_login');
+    btn.disabled = true;
+    try {
+        const result = await fbAuth.signInWithPopup(_githubProvider);
+        // サインイン直後だけアクセストークンが取れる → GitHub API でログイン名を取得
+        const credential = firebase.auth.GithubAuthProvider.credentialFromResult(result);
+        if (credential?.accessToken) {
+            const res = await fetch('https://api.github.com/user', {
+                headers: { Authorization: `token ${credential.accessToken}` }
+            });
+            const data = await res.json();
+            if (data.login) {
+                localStorage.setItem('gh_login_' + result.user.uid, data.login);
+            }
+        }
+        // onAuthStateChanged が続けて呼ばれて UI を更新する
+    } catch (e) {
+        console.warn('GitHub sign-in failed:', e);
+        btn.disabled = false;
+    }
+});
+
+// ログアウトボタン
+document.getElementById('btn_github_logout').addEventListener('click', async () => {
+    await fbAuth.signOut();
+});
+
+// 認証状態の変化を監視
+fbAuth.onAuthStateChanged(user => {
+    _fbUser = user;
+    if (user) {
+        // キャッシュからログイン名を取得（再訪問時）
+        const login = localStorage.getItem('gh_login_' + user.uid) || null;
+        _githubLogin = login;
+        _applyGithubLogin(login);
+    } else {
+        _githubLogin = null;
+        _applyGithubLogin(null);
+    }
+});
+
+function _applyGithubLogin(login) {
+    document.getElementById('btn_github_login').style.display  = login ? 'none' : '';
+    document.getElementById('btn_github_login').disabled = false;
+    document.getElementById('github_verified_row').style.display = login ? '' : 'none';
+    document.getElementById('github_verified_id').textContent = login ? '@' + login : '';
+    const input = document.getElementById('input_github');
+    input.value = login || '';
+    updateSideLabel(login || '');
+    if (login) {
+        // アバターを取得
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload  = () => { avatarImg = img; scheduleRender(); };
+        img.onerror = () => { avatarImg = null; scheduleRender(); };
+        img.src = `https://avatars.githubusercontent.com/${login}`;
+    } else {
+        avatarImg = null;
+        scheduleRender();
+    }
+}
+
+// ── 勢力ウォッチ（登録前の扇表示 ＋ ミニ軍勢メーター） ────────────────────────────────────────
+let _prevWestPct = null;
+function updateBattleMeter(westPct) {
+    const bar = document.getElementById('bm_bar');
+    if (!bar) return;
+    bar.style.width = westPct + '%';
+    document.getElementById('bm_west_pct').textContent = westPct + '%';
+    document.getElementById('bm_east_pct').textContent = (100 - westPct) + '%';
+    const flashEl = document.getElementById('battle_flash');
+    if (_prevWestPct !== null && flashEl) {
+        const diff = westPct - _prevWestPct;
+        let msg = '', cls = '';
+        if (_prevWestPct < 50 && westPct >= 50)      { msg = t('flashWestTurn'); cls = 'flash-west'; }
+        else if (_prevWestPct >= 50 && westPct < 50) { msg = t('flashEastTurn'); cls = 'flash-east'; }
+        else if (diff >= 3)                           { msg = t('flashWestGain'); cls = 'flash-west'; }
+        else if (diff <= -3)                          { msg = t('flashEastGain'); cls = 'flash-east'; }
+        if (msg) {
+            flashEl.textContent = msg;
+            flashEl.className = `battle-flash ${cls} active`;
+            setTimeout(() => flashEl.classList.remove('active'), 3000);
+        }
+    }
+    _prevWestPct = westPct;
+}
+
+fbDb.ref('scores').on('value', snap => {
+    let westTotal = 0, eastTotal = 0;
+    snap.forEach(c => {
+        const e = c.val();
+        if (e.side === 'west' || e.side === '西軍') westTotal += e.scoreLog || 0;
+        else eastTotal += e.scoreLog || 0;
+    });
+    const total = westTotal + eastTotal || 1;
+    const westPct = Math.round(westTotal / total * 100);
+    updateBattleMeter(westPct);
+
+    if (_currentRank !== null) return;
+    const diff = westTotal - eastTotal;
+    let statusText, colorMode;
+    if (total <= 1 || Math.abs(diff) < total * 0.08) { statusText = t('statusNeutral'); colorMode = 'neutral'; }
+    else if (diff > 0) { statusText = t('statusWest'); colorMode = 'west'; }
+    else               { statusText = t('statusEast'); colorMode = 'east'; }
+    const badge = document.getElementById('rank_badge');
+    badge.innerHTML = makeStatusFanSVG(statusText, colorMode);
+    badge.className = 'rank-badge show';
+});
+
+// ── ruby.wasm ────────────────────────────────────────
+let _rubyInit = null;
+
+function loadRubyVM() {
+    if (_rubyInit) return _rubyInit;
+    _rubyInit = (async () => {
+        if (!window['ruby-wasm-wasi']) {
+            await new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/@ruby/wasm-wasi@2.6.0/dist/browser.umd.js';
+                s.onload = resolve; s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        }
+        const { DefaultRubyVM } = window['ruby-wasm-wasi'];
+        const module = await WebAssembly.compileStreaming(
+            fetch('https://cdn.jsdelivr.net/npm/@ruby/3.3-wasm-wasi@2.6.0/dist/ruby.wasm')
+        );
+        const { vm } = await DefaultRubyVM(module);
+        return vm;
+    })();
+    return _rubyInit;
+}
+
+function calcScore(resultStr, codeLen) {
+    // 結果の桁数とコード長からスコアを計算（BigInt使用）
+    try {
+        const big = BigInt(resultStr);
+        if (big <= 0n) return null;
+        const score = big / BigInt(codeLen);
+        return { scoreBig: score, scoreStr: score.toString(), scoreLog: resultStr.length - Math.log10(codeLen) };
+    } catch { return null; }
+}
+
+function fmtScore(scoreStr) {
+    if (scoreStr.length <= 12) return Number(scoreStr).toLocaleString();
+    return scoreStr.slice(0, 4) + '...' + `(${scoreStr.length}桁)`;
+}
+
+let _lastScore = null;
+let _currentRank = null;
+
+// ③ コード復元
+const _savedCode = localStorage.getItem('sekigahara_ruby_code');
+if (_savedCode) document.getElementById('input_ruby').value = _savedCode;
+document.getElementById('input_ruby').addEventListener('input', e => {
+    localStorage.setItem('sekigahara_ruby_code', e.target.value);
+});
+
+// ── フォーム情報の永続化 ──────────────────────────────────────
+const LS = 'sekigahara_form_';
+function saveForm(id) { localStorage.setItem(LS + id, document.getElementById(id).value); }
+['input_name', 'input_warcry'].forEach(id =>
+    document.getElementById(id).addEventListener('input', () => saveForm(id))
+);
+document.getElementById('input_side').addEventListener('change', () => saveForm('input_side'));
+
+// ① Enter で実行
+document.getElementById('input_ruby').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn_ruby_run').click(); }
+});
+
+// ⑤ 例クリック
+document.querySelectorAll('.ruby-example-btn').forEach(el => {
+    el.addEventListener('click', () => {
+        const code = el.dataset.code;
+        document.getElementById('input_ruby').value = code;
+        localStorage.setItem('sekigahara_ruby_code', code);
+        el.closest('details').removeAttribute('open');
+        document.getElementById('btn_ruby_run').click();
+    });
+});
+
+document.getElementById('btn_ruby_run').addEventListener('click', async () => {
+    const code = document.getElementById('input_ruby').value.trim();
+    const output = document.getElementById('ruby_output');
+    const scoreArea = document.getElementById('ruby_score_area');
+    const btn = document.getElementById('btn_ruby_run');
+    if (!code) return;
+
+    scoreArea.style.display = 'none';
+    _lastScore = null;
+    btn.disabled = true;
+    const firstLoad = !_rubyInit;
+    btn.textContent = firstLoad ? '⏳ ...' : '▶ ...';
+    output.className = 'ruby-output loading';
+    output.textContent = firstLoad ? t('loading') : t('running');
+
+    try {
+        const vm = await loadRubyVM();
+        if (firstLoad) output.textContent = t('running');
+        const normalized = code.replace(/[\u201C\u201D\u201E\uFF02]/g, '"').replace(/[\u2018\u2019\u201A\uFF07]/g, "'");
+        const rbResult = vm.eval(normalized);
+        const resultStr = rbResult.toString();
+        const score = calcScore(resultStr, normalized.length);
+        if (!score) {
+            output.className = 'ruby-output error';
+            output.textContent = `=> ${resultStr.slice(0, 80)}　${t('mustReturnInt')}`;
+            return;
+        }
+        output.className = 'ruby-output success';
+        output.textContent = `=> ${resultStr.length > 30 ? resultStr.slice(0,20)+'…('+t('digits')(resultStr.length)+')' : resultStr}`;
+        document.getElementById('ruby_score_val').textContent = fmtScore(score.scoreStr);
+        scoreArea.style.display = 'block';
+        _lastScore = { code: normalized, resultStr, ...score };
+    } catch (e) {
+        console.error('ruby.wasm error:', e);
+        output.className = 'ruby-output error';
+        output.textContent = t('errPrefix') + (e?.message ?? String(e));
+    } finally {
+        btn.disabled = false;
+        btn.textContent = t('btnRun');
+    }
+});
+
+document.getElementById('btn_submit_score').addEventListener('click', async () => {
+    if (!_lastScore) return;
+
+    // GitHub 認証必須チェック
+    if (!_fbUser || !_githubLogin) {
+        const btn = document.getElementById('btn_submit_score');
+        const orig = btn.textContent;
+        btn.textContent = t('githubLoginRequired');
+        setTimeout(() => { btn.textContent = orig; }, 3000);
+        return;
+    }
+
+    const name = document.getElementById('input_name').value.trim() || t('noName');
+    const side = document.getElementById('input_side').value;
+    const btn = document.getElementById('btn_submit_score');
+    const userKey = _fbUser.uid;
+
+    btn.disabled = true;
+    btn.textContent = t('registering');
+    try {
+        const myTs = Date.now();
+        const myScoreLog = _lastScore.scoreLog;
+        const myCodeLen = _lastScore.code.length;
+        await fbDb.ref('scores/' + userKey).set({
+            name,
+            side,
+            // code はサーバーに保存しない（回答の秘匿 ＋ セキュリティ）
+            codeLen: myCodeLen,
+            resultDigits: _lastScore.resultStr.length,
+            scoreLog: myScoreLog,
+            ts: myTs
+        });
+
+        // 登録後に順位を計算してカードに反映
+        const snap = await fbDb.ref('scores').once('value');
+        const all = [];
+        snap.forEach(c => all.push(c.val()));
+        _currentRank = all.filter(e =>
+            e.scoreLog > myScoreLog ||
+            (e.scoreLog === myScoreLog && e.codeLen < myCodeLen) ||
+            (e.scoreLog === myScoreLog && e.codeLen === myCodeLen && e.ts < myTs)
+        ).length + 1;
+        const badge = document.getElementById('rank_badge');
+        badge.innerHTML = makeRankFanSVG(_currentRank);
+        badge.className = 'rank-badge show';
+        document.getElementById('card').classList.toggle('top10', _currentRank <= 10);
+        if (_currentRank <= 10) { startGoldShimmer(); } else { stopGoldShimmer(); }
+
+        btn.textContent = t('registered')(_currentRank);
+        const linkEl = document.getElementById('ranking_link');
+        linkEl.textContent = t('rankingLinkRank')(_currentRank);
+        document.getElementById('ranking_link_area').style.display = 'block';
+        setTimeout(() => { btn.textContent = t('btnSubmitReset'); btn.disabled = false; }, 3000);
+    } catch (e) {
+        btn.textContent = t('registerFail');
+        btn.disabled = false;
+    }
+});
+
+// ── イベント登録 ──────────────────────────────────────
+document.getElementById('input_name').addEventListener('input', updateText);
+document.getElementById('input_warcry').addEventListener('input', updateText);
+document.getElementById('input_side').addEventListener('change', () => { updateSide(); updateText(); });
+
+// ── 初期化 ────────────────────────────────────────────
+function init() {
+    // 前回の入力を復元（GitHub ID は Firebase Auth が管理するため除外）
+    ['input_side', 'input_name', 'input_warcry'].forEach(id => {
+        const v = localStorage.getItem(LS + id);
+        if (v !== null) document.getElementById(id).value = v;
+    });
+
+    // 名乗りが未保存の場合のみランダム設定
+    if (!localStorage.getItem(LS + 'input_warcry')) {
+        const side = document.getElementById('input_side').value;
+        const key = side + (_lang === 'en' ? '_en' : '');
+        const msgs = MSGS[key] || MSGS[side];
+        document.getElementById('input_warcry').value = msgs[Math.floor(Math.random() * msgs.length)];
+    }
+    // GitHub ID / アバターは onAuthStateChanged → _applyGithubLogin() が設定する
+
+    // 言語適用（ページタイトル・ラベルを一括更新）
+    applyLang(_lang);
+
+    updateCardScale();
+    document.fonts.ready.then(() => {
+        updateText();
+        updateSide();
+        scheduleRender();
+    });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<div class="container wind-bg">
+  <div class="wind-line"></div>
+  <div class="wind-line"></div>
+  <div class="wind-line"></div>
+  <div class="wind-line"></div>
+  <img src="diorama.png" class="foreground-img">
+</div>
+
+<style>
+.wind-bg {
+  background: linear-gradient(to bottom, #87CEEB, #E0F7FA); /* 空の色 */
+  position: relative;
+  width: 800px;
+  height: 500px;
+  overflow: hidden;
+}
+
+.wind-line {
+  position: absolute;
+  width: 150px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  left: -200px;
+  z-index: 1;
+  animation: wind linear infinite;
+}
+
+/* ランダムな高さと速度設定 */
+.wind-line:nth-child(1) { top: 20%; animation-duration: 0.8s; }
+.wind-line:nth-child(2) { top: 50%; animation-duration: 1.2s; animation-delay: 0.2s; }
+.wind-line:nth-child(3) { top: 70%; animation-duration: 0.5s; animation-delay: 0.5s; }
+.wind-line:nth-child(4) { top: 40%; animation-duration: 1.5s; animation-delay: 0.1s; }
+
+@keyframes wind {
+  0% { left: -200px; opacity: 0; }
+  50% { opacity: 1; }
+  100% { left: 1000px; opacity: 0; }
+}
+</style>

@@ -1,0 +1,43 @@
+{
+  "rules": {
+    "scores": {
+      // 全員が読み取り可（勢力メーター・ランキング表示に必要）
+      ".read": true,
+
+      "$uid": {
+        // 書き込み条件：
+        //   1. 匿名認証済みで、自分の uid にしか書けない
+        //   2. 必須フィールドが全て揃っている
+        //   3. 各フィールドの型・値域が正当
+        //   4. scoreLog ≤ resultDigits（水増し防止）
+        //   5. 前回登録から 30 秒以上経過していること（スパム防止）
+        ".write": "
+          auth != null &&
+          auth.uid === $uid &&
+          newData.hasChildren(['name','side','codeLen','resultDigits','scoreLog','ts']) &&
+          newData.child('name').isString() &&
+          newData.child('name').val().length >= 1 &&
+          newData.child('name').val().length <= 50 &&
+          newData.child('side').isString() &&
+          (
+            newData.child('side').val() === 'west' ||
+            newData.child('side').val() === 'east' ||
+            newData.child('side').val() === '西軍' ||
+            newData.child('side').val() === '東軍'
+          ) &&
+          newData.child('codeLen').isNumber() &&
+          newData.child('codeLen').val() >= 1 &&
+          newData.child('codeLen').val() <= 200 &&
+          newData.child('resultDigits').isNumber() &&
+          newData.child('resultDigits').val() >= 1 &&
+          newData.child('resultDigits').val() <= 100000 &&
+          newData.child('scoreLog').isNumber() &&
+          newData.child('scoreLog').val() >= 0 &&
+          newData.child('scoreLog').val() <= newData.child('resultDigits').val() &&
+          newData.child('ts').isNumber() &&
+          (!data.exists() || newData.child('ts').val() > data.child('ts').val() + 30000)
+        "
+      }
+    }
+  }
+}

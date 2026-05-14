@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>関ヶ原Ruby会議 算法合戦ランキング</title>
+    <link href="https://fonts.googleapis.com/css2?family=Yuji+Mai&family=Sawarabi+Mincho&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #07090F;
+            background-image:
+                linear-gradient(rgba(5,7,14,0.78), rgba(5,7,14,0.78)),
+                url('https://upload.wikimedia.org/wikipedia/commons/9/9f/Sekigaharascreen.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #C8B880;
+            font-family: 'Sawarabi Mincho', serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.4rem;
+            letter-spacing: 0.5em;
+            color: #C9A84C;
+            border-top: 1px solid #9A7B1A;
+            border-bottom: 1px solid #9A7B1A;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #5A4A28;
+            margin-bottom: 30px;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.1em;
+        }
+        .ranking-table {
+            max-width: 900px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .ranking-table th {
+            font-size: 0.7rem;
+            color: #6A5A38;
+            border-bottom: 1px solid #2A2018;
+            padding: 6px 12px;
+            text-align: left;
+            letter-spacing: 0.1em;
+        }
+        .ranking-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #1A1508;
+            vertical-align: middle;
+        }
+
+        /* ── メダルバッジ ── */
+        .rank-cell { text-align: center; width: 64px; padding: 6px 8px; }
+        .rank-medal {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            margin: 0 auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            position: relative;
+            line-height: 1;
+        }
+        .medal-crown { font-size: 0.7rem; line-height: 1; margin-bottom: 1px; }
+        .medal-num   { font-size: 1rem; line-height: 1; }
+
+        /* 金 */
+        .rank-1 .rank-medal {
+            background: radial-gradient(circle at 38% 32%, #FFFAAA 0%, #FFD700 40%, #B8860B 75%, #7A5800 100%);
+            border: 2px solid #FFE066;
+            box-shadow: 0 0 14px 4px rgba(255,215,0,0.55), inset 0 2px 5px rgba(255,255,180,0.7);
+            color: #3D2400;
+        }
+        tr.rank-1 td { background: linear-gradient(90deg, rgba(255,215,0,0.10) 0%, transparent 70%); }
+
+        /* 銀 */
+        .rank-2 .rank-medal {
+            background: radial-gradient(circle at 38% 32%, #FFFFFF 0%, #E0E0E0 40%, #A0A0A0 75%, #686868 100%);
+            border: 2px solid #D8D8D8;
+            box-shadow: 0 0 10px 2px rgba(200,200,200,0.35), inset 0 2px 5px rgba(255,255,255,0.7);
+            color: #1E1E1E;
+        }
+        tr.rank-2 td { background: linear-gradient(90deg, rgba(200,200,200,0.08) 0%, transparent 70%); }
+
+        /* 銅 */
+        .rank-3 .rank-medal {
+            background: radial-gradient(circle at 38% 32%, #FFD4A0 0%, #CD7F32 40%, #7A3E0A 75%, #4A2200 100%);
+            border: 2px solid #CD7F32;
+            box-shadow: 0 0 10px 2px rgba(205,127,50,0.4), inset 0 2px 5px rgba(255,200,120,0.55);
+            color: #2A0E00;
+        }
+        tr.rank-3 td { background: linear-gradient(90deg, rgba(205,127,50,0.09) 0%, transparent 70%); }
+
+        /* 木製（4位以下） */
+        .rank-wood .rank-medal {
+            background: radial-gradient(circle at 38% 32%, #C49A6C 0%, #8B5E30 45%, #5C3410 78%, #3A1E06 100%);
+            border: 2px solid #7A5030;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.45), inset 0 -1px 3px rgba(200,140,60,0.25);
+            color: #F0D4A0;
+        }
+        .medal-num.small { font-size: 0.85rem; }
+
+        .entry-name {
+            font-size: 1rem;
+            color: #C8B880;
+        }
+        .entry-side {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 2px;
+            margin-left: 6px;
+        }
+        .side-west { background: rgba(16,96,184,0.3); color: #6ECFE8; border: 1px solid #1A9FD0; }
+        .side-east { background: rgba(184,32,16,0.3); color: #F8C010; border: 1px solid #E86010; }
+        .entry-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #9A7BC8;
+            background: rgba(20,10,40,0.5);
+            padding: 3px 8px;
+            border-radius: 2px;
+        }
+        .entry-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #78C888;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .entry-digits {
+            font-size: 0.65rem;
+            color: #4A3A20;
+            text-align: right;
+        }
+        .no-data {
+            text-align: center;
+            color: #3A3028;
+            padding: 60px;
+            font-size: 0.9rem;
+        }
+        .live-badge {
+            display: inline-block;
+            background: #B04040;
+            color: #fff;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 2px;
+            margin-left: 8px;
+            animation: blink 1.5s infinite;
+            vertical-align: middle;
+        }
+        @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.75rem;
+        }
+        .back-link a { color: #5A4A28; text-decoration: none; }
+        .back-link a:hover { color: #9A7B1A; }
+        .battle-meter {
+            max-width: 900px;
+            margin: 0 auto 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .battle-side {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90px;
+            flex-shrink: 0;
+        }
+        .battle-label {
+            font-size: 0.85rem;
+            letter-spacing: 0.3em;
+            margin-bottom: 4px;
+        }
+        .west-side .battle-label { color: #6ECFE8; }
+        .east-side .battle-label { color: #F8C010; }
+        .battle-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+        .west-side .battle-score { color: #6ECFE8; }
+        .east-side .battle-score { color: #F8C010; }
+        .battle-bar-wrap {
+            flex: 1;
+            height: 14px;
+            background: rgba(184,32,16,0.35);
+            border: 1px solid #5A2010;
+            position: relative;
+            overflow: hidden;
+        }
+        .battle-bar {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            background: rgba(16,96,184,0.55);
+            border-right: 2px solid #6ECFE8;
+            transition: width 0.8s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>算 法 合 戦<span class="live-badge">LIVE</span></h1>
+    <div class="subtitle">コードで軍勢を増強せよ &nbsp;／&nbsp; スコア = 結果 ÷ 文字数</div>
+
+    <div class="battle-meter" id="battle_meter">
+        <div class="battle-side west-side">
+            <span class="battle-label">西 軍</span>
+            <span class="battle-score" id="west_score">-</span>
+        </div>
+        <div class="battle-bar-wrap">
+            <div class="battle-bar" id="west_bar" style="width:50%"></div>
+        </div>
+        <div class="battle-side east-side">
+            <span class="battle-score" id="east_score">-</span>
+            <span class="battle-label">東 軍</span>
+        </div>
+    </div>
+
+    <table class="ranking-table">
+        <thead>
+            <tr>
+                <th style="text-align:center">順位</th>
+                <th>武将名</th>
+                <th>コード</th>
+                <th style="text-align:right">結果の桁数</th>
+                <th style="text-align:right">スコア (対数)</th>
+            </tr>
+        </thead>
+        <tbody id="ranking_body">
+            <tr><td colspan="5" class="no-data">まだ登録がありません</td></tr>
+        </tbody>
+    </table>
+
+    <div class="back-link"><a href="index.html">← 武将メーカーに戻る</a></div>
+
+    <script>
+        firebase.initializeApp({
+            apiKey:            "AIzaSyAZw-gCUn6-14D6iK2qesUm7NLRGSm0e_s",
+            authDomain:        "sekigahara-card.firebaseapp.com",
+            databaseURL:       "https://sekigahara-card-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId:         "sekigahara-card",
+            storageBucket:     "sekigahara-card.firebasestorage.app",
+            messagingSenderId: "206009048073",
+            appId:             "1:206009048073:web:f164c33f3624511541acd8"
+        });
+        const db = firebase.database();
+
+        db.ref('scores').orderByChild('scoreLog').limitToLast(50).on('value', snap => {
+            const entries = [];
+            snap.forEach(child => entries.push(child.val()));
+
+            // 勢力メーター更新
+            let westTotal = 0, eastTotal = 0;
+            entries.forEach(e => {
+                const isWest = e.side === 'west' || e.side === '西軍';
+                if (isWest) westTotal += e.scoreLog || 0;
+                else eastTotal += e.scoreLog || 0;
+            });
+            const total = westTotal + eastTotal || 1;
+            const westPct = Math.round(westTotal / total * 100);
+            document.getElementById('west_bar').style.width = westPct + '%';
+            document.getElementById('west_score').textContent = westTotal.toFixed(1);
+            document.getElementById('east_score').textContent = eastTotal.toFixed(1);
+
+            entries.sort((a, b) => {
+                if (b.scoreLog !== a.scoreLog) return b.scoreLog - a.scoreLog;
+                if (a.codeLen !== b.codeLen) return a.codeLen - b.codeLen;
+                return a.ts - b.ts;
+            });
+
+            const tbody = document.getElementById('ranking_body');
+            if (entries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="no-data">まだ登録がありません</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = entries.slice(0, 30).map((e, i) => {
+                const rank = i + 1;
+                const isWest = e.side === 'west' || e.side === '西軍';
+                const sideClass = isWest ? 'side-west' : 'side-east';
+                const sideLabel = isWest ? '西軍' : '東軍';
+                const scoreDisp = e.scoreLog ? e.scoreLog.toFixed(2) : '-';
+                const rowClass = rank <= 3 ? `rank-${rank}` : 'rank-wood';
+                const crown = rank === 1 ? '<span class="medal-crown">♛</span>' : '';
+                const numClass = rank >= 10 ? 'medal-num small' : 'medal-num';
+                const medal = `<div class="rank-medal">${crown}<span class="${numClass}">${rank}</span></div>`;
+                return `
+                <tr class="${rowClass}">
+                    <td class="rank-cell">${medal}</td>
+                    <td class="entry-name">
+                        ${e.name}<span class="entry-side ${sideClass}">${sideLabel}</span>
+                    </td>
+                    <td><span class="entry-code">${escHtml(e.code)}</span></td>
+                    <td class="entry-digits">${e.resultDigits}桁</td>
+                    <td class="entry-score">${scoreDisp}</td>
+                </tr>`;
+            }).join('');
+        });
+
+        function escHtml(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+    </script>
+</body>
+</html>
