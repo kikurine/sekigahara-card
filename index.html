@@ -413,6 +413,7 @@
         .btn-main:hover { background: linear-gradient(to bottom, #3A3018, #2A2010); }
         .btn-main:disabled { opacity: 0.45; cursor: not-allowed; }
         #btn_generate { letter-spacing: 0.18em; }
+        .btn-share-in-drawer { width: 100%; margin-top: 16px; }
         #download_area { display: none; text-align: center; }
         #download_area p { margin-bottom: 8px; color: #7A6840; font-size: 0.85rem; letter-spacing: 0.15em; }
         .dl-btns { display: flex; gap: 10px; margin-top: 10px; }
@@ -927,6 +928,9 @@
             </div>
         </div>
 
+        <!-- シェアボタン -->
+        <button class="btn-main btn-share-in-drawer" id="btn_generate" data-i18n="btnShare">い ざ 、 𝕏 で シ ェ ア ！</button>
+
             <!-- カード描画・既存コードが参照する隠しフィールド -->
             <input type="text" id="input_github" style="display:none">
 
@@ -988,7 +992,6 @@
         </div>
 
         <div class="action-btns">
-            <button class="btn-main" id="btn_generate" data-i18n="btnShare">い ざ 、 𝕏 で シ ェ ア ！</button>
             <div id="download_area">
                 <p data-i18n="cardReady">── 写しが完成いたした ──</p>
                 <img id="final_image" style="width:100%; border:1px solid #3A3020;">
