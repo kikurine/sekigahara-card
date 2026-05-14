@@ -1018,7 +1018,7 @@ const WARRIOR_CFG = {
 };
 
 // ── 画像読み込み ──────────────────────────────────────
-const SRC  = { diorama: 'diorama.png?v=4', east: 'busho_east.png?v=2', west: 'busho_west.png?v=2' };
+const SRC  = { diorama: 'diorama.png?v=5', east: 'busho_east.png?v=2', west: 'busho_west.png?v=2' };
 // 前景レイヤー（つば・えり）: ファイルが存在すれば自動的に使用
 const SRC_FRONT = { east_front: 'busho_east_front.png', west_front: 'busho_west_front.png' };
 const imgs = {};
@@ -1738,6 +1738,7 @@ function updateCardScale() {
     }
 }
 window.addEventListener('resize', updateCardScale);
+updateCardScale(); // 画像ロード前に即実行してモバイルのはみ出しを防ぐ
 
 // ── ドロワー開閉（モバイル） ──────────────────────────
 document.getElementById('drawer_handle').addEventListener('click', () => {
