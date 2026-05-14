@@ -627,25 +627,35 @@
         }
 
         /* ── レスポンシブ ── */
+        /* ── ドロワーハンドル（モバイルのみ表示） ── */
+        .drawer-handle {
+            display: none;
+        }
         @media (max-width: 760px) {
             body {
                 overflow-x: hidden;
+                overflow-y: hidden;
                 margin: 0;
-                padding-left: 0;
-                padding-right: 0;
+                padding: 0;
+                height: 100dvh;
+            }
+            .site-title {
+                font-size: 0.82rem;
+                letter-spacing: 0.15em;
+                padding: 6px 12px;
+                text-align: center;
             }
             .container {
                 flex-direction: column;
                 align-items: stretch;
-                gap: 24px;
-                padding: 0 12px;
+                gap: 0;
+                padding: 0 12px 70px;
                 width: 100%;
                 box-sizing: border-box;
+                overflow-y: auto;
+                height: calc(100dvh - 36px); /* site-titleの高さ分を引く */
             }
-            .controls {
-                width: 100%;
-                box-sizing: border-box;
-            }
+            /* カードセクション */
             .container > div:last-child {
                 width: 100%;
                 box-sizing: border-box;
@@ -653,16 +663,69 @@
             .action-btns {
                 width: 100% !important;
             }
-            /* iOSのフォント自動拡大を防ぐ (16px未満だとSafariが自動ズームする) */
+
+            /* ── ボトムドロワー ── */
+            .controls {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                box-sizing: border-box;
+                background: #0E0A04;
+                border-top: 1px solid rgba(154,123,26,0.45);
+                border-radius: 18px 18px 0 0;
+                max-height: 82dvh;
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                transform: translateY(calc(100% - 56px));
+                transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+                z-index: 200;
+                padding: 0 16px 40px;
+            }
+            .controls.drawer-open {
+                transform: translateY(0);
+            }
+            .controls h2 {
+                display: none; /* ハンドルラベルと重複するため非表示 */
+            }
+
+            /* ドロワーハンドル */
+            .drawer-handle {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 5px;
+                padding: 10px 16px 8px;
+                cursor: pointer;
+                user-select: none;
+                position: sticky;
+                top: 0;
+                background: #0E0A04;
+                z-index: 1;
+            }
+            .drawer-pill {
+                width: 36px;
+                height: 4px;
+                background: rgba(154,123,26,0.45);
+                border-radius: 2px;
+                transition: background 0.2s;
+            }
+            .controls.drawer-open .drawer-pill {
+                background: rgba(154,123,26,0.8);
+            }
+            .drawer-label {
+                font-family: 'Sawarabi Mincho', serif;
+                font-size: 0.76rem;
+                color: var(--gold-light);
+                letter-spacing: 0.35em;
+                opacity: 0.85;
+            }
+
+            /* iOSのフォント自動拡大を防ぐ */
             input, select, textarea,
             .ruby-input-row input {
                 font-size: 16px;
-            }
-            .site-title {
-                font-size: 0.82rem;
-                letter-spacing: 0.15em;
-                padding: 8px 12px;
-                text-align: center;
             }
         }
 
@@ -677,8 +740,12 @@
 <div class="site-title" data-i18n="siteTitle">天下分け目の算法合戦</div>
 
 <div class="container">
-    <!-- 左：操作パネル -->
+    <!-- 左：操作パネル（モバイルではボトムドロワー） -->
     <div class="controls">
+        <div id="drawer_handle" class="drawer-handle">
+            <div class="drawer-pill"></div>
+            <span class="drawer-label" data-i18n="formTitle">出 陣 の 支 度</span>
+        </div>
         <h2 data-i18n="formTitle">出 陣 の 支 度</h2>
 
         <div class="field-group" id="fg_side">
@@ -1535,15 +1602,9 @@ function updateCardScale() {
     const wrapper  = document.querySelector('.card-wrapper');
     const card     = document.getElementById('card');
     const btns     = document.querySelector('.action-btns');
-    // モバイルではcontrolsと同じ幅にカードを合わせる、PCは640px固定
     const isMobile = window.innerWidth <= 760;
-    let maxW;
-    if (isMobile) {
-        const controls = document.querySelector('.controls');
-        maxW = Math.min(640, controls ? controls.offsetWidth : window.innerWidth - 48);
-    } else {
-        maxW = Math.min(640, window.innerWidth - 48);
-    }
+    // モバイルはドロワーが fixed になるので viewport 幅から余白を引いた値を使う
+    const maxW = Math.min(640, isMobile ? window.innerWidth - 24 : window.innerWidth - 48);
     if (maxW < 640) {
         const scale = maxW / 640;
         wrapper.style.width  = maxW + 'px';
@@ -1559,6 +1620,11 @@ function updateCardScale() {
     }
 }
 window.addEventListener('resize', updateCardScale);
+
+// ── ドロワー開閉（モバイル） ──────────────────────────
+document.getElementById('drawer_handle').addEventListener('click', () => {
+    document.querySelector('.controls').classList.toggle('drawer-open');
+});
 
 // ── Firebase ─────────────────────────────────────────
 const fbApp = firebase.initializeApp({
