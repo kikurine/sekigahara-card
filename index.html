@@ -846,7 +846,7 @@
             <div class="card-body">
                 <div class="armor-stage">
                     <div class="side-deco-left" id="card_side_deco">西軍</div>
-                    <canvas id="warrior_canvas" width="640" height="360"></canvas>
+                    <canvas id="warrior_canvas" width="640" height="640"></canvas>
                 </div>
                 <div class="info-strip">
                     <div class="info-main">
@@ -881,7 +881,7 @@
 
 <script>
 // ── 定数 ──────────────────────────────────────────────
-const W_W = 640, W_H = 360;  // warrior_canvas の内部サイズ（16:9）
+const W_W = 640, W_H = 640;  // warrior_canvas の内部サイズ（1:1）
 
 const CHROMA    = { r: 0, g: 195, b: 228 };
 const CHROMA_TOL = 72;
@@ -897,8 +897,8 @@ const FACE_CFG = {
 };
 
 const WARRIOR_CFG = {
-    east: { x: 210, y: 0, h: 330 },
-    west: { x: 210, y: 0, h: 330 },
+    east: { x: 130, y: 0, h: 600 },
+    west: { x: 130, y: 0, h: 600 },
 };
 
 // ── 画像読み込み ──────────────────────────────────────
@@ -1608,7 +1608,7 @@ function updateCardScale() {
     if (maxW < 640) {
         const scale = maxW / 640;
         wrapper.style.width  = maxW + 'px';
-        wrapper.style.height = Math.round(360 * scale) + 'px';
+        wrapper.style.height = maxW + 'px';  // 正方形なので width = height
         wrapper.style.overflow = 'hidden';
         card.style.transformOrigin = 'top left';
         card.style.transform = `scale(${scale})`;
