@@ -360,7 +360,7 @@
         .btn-github-logout:hover { border-color: var(--gold); color: var(--gold-light); }
         .github-login-hint {
             font-size: 0.72rem;
-            color: #6A5830;
+            color: #9A8A50;
             letter-spacing: 0.08em;
             text-align: center;
             margin-top: 4px;
@@ -627,6 +627,69 @@
             font-weight: bold;
         }
 
+        /* ── カード直下 GitHub エリア ── */
+        .card-github-area {
+            width: 640px;
+            margin-top: 6px;
+        }
+        .btn-card-github-login {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 9px 14px;
+            background: rgba(20,16,8,0.6);
+            border: 1px solid rgba(154,123,26,0.45);
+            color: var(--gold-light);
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: border-color 0.25s, background 0.25s;
+        }
+        .btn-card-github-login:hover {
+            border-color: rgba(154,123,26,0.75);
+            background: rgba(40,32,12,0.7);
+        }
+        .btn-card-github-login:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-cg-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
+        .btn-cg-main {
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.2em;
+            line-height: 1.3;
+        }
+        .btn-cg-sub {
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            color: #9A8A50;
+            line-height: 1.2;
+        }
+        .card-github-verified {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            background: rgba(0,40,0,0.22);
+            border: 1px solid rgba(80,160,80,0.35);
+            box-sizing: border-box;
+        }
+        .card-github-id-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: var(--gold-light);
+            letter-spacing: 0.05em;
+        }
+        .card-verified-badge {
+            font-size: 0.68rem;
+            color: #70B080;
+            letter-spacing: 0.05em;
+        }
+
         /* ── レスポンシブ ── */
         /* ── ドロワーハンドル（モバイルのみ表示） ── */
         .drawer-handle {
@@ -761,55 +824,6 @@
             .ruby-input-row input {
                 font-size: 16px;
             }
-        }
-
-        /* ── カード直下 GitHub エリア ── */
-        .card-github-area {
-            width: 640px;
-            margin-top: 6px;
-        }
-        .btn-card-github-login {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            width: 100%;
-            padding: 8px 14px;
-            background: rgba(20,16,8,0.55);
-            border: 1px solid rgba(154,123,26,0.28);
-            color: #6A5830;
-            font-family: 'Sawarabi Mincho', serif;
-            font-size: 0.78rem;
-            letter-spacing: 0.18em;
-            cursor: pointer;
-            box-sizing: border-box;
-            transition: border-color 0.25s, color 0.25s, background 0.25s;
-        }
-        .btn-card-github-login:hover {
-            border-color: rgba(154,123,26,0.65);
-            color: var(--gold-light);
-            background: rgba(40,32,12,0.7);
-        }
-        .btn-card-github-login:disabled { opacity: 0.4; cursor: not-allowed; }
-        .card-github-verified {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            background: rgba(0,40,0,0.18);
-            border: 1px solid rgba(80,160,80,0.28);
-            box-sizing: border-box;
-        }
-        .card-github-id-text {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.82rem;
-            color: var(--gold-light);
-            letter-spacing: 0.05em;
-        }
-        .card-verified-badge {
-            font-size: 0.68rem;
-            color: #70B080;
-            letter-spacing: 0.05em;
         }
 
     </style>
@@ -952,8 +966,11 @@
         <!-- カード直下：GitHubログイン（ログイン前）/ 認証済み表示（ログイン後） -->
         <div id="card_github_area" class="card-github-area">
             <button id="btn_github_login2" class="btn-card-github-login">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                <span data-i18n="btnCardGithubLogin">GitHub でログイン → アイコンをカードに反映</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                <span class="btn-cg-text">
+                    <span class="btn-cg-main" data-i18n="btnGithubLogin">GitHub でログイン</span>
+                    <span class="btn-cg-sub" data-i18n="btnCardGithubSub">アバターをカードに反映</span>
+                </span>
             </button>
             <div id="card_github_verified" class="card-github-verified" style="display:none">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="opacity:0.7"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -1511,6 +1528,7 @@ const LANG = {
         registerFail: '❌ 登録失敗', btnSubmitReset: '🏆 ランキングに登録',
         btnGithubLogin: 'GitHub でログイン',
         btnCardGithubLogin: 'GitHub でログイン → アイコンをカードに反映',
+        btnCardGithubSub: 'アバターをカードに反映',
         githubVerified: '✓ 本人確認済',
         btnGithubLogout: 'ログアウト',
         githubLoginRequired: '⚠️ ランキング登録・シェアには GitHub ログインが必要です',
@@ -1551,6 +1569,7 @@ const LANG = {
         registerFail: '❌ Registration failed', btnSubmitReset: '🏆 Join Ranking',
         btnGithubLogin: 'Sign in with GitHub',
         btnCardGithubLogin: 'Sign in with GitHub → Add avatar to card',
+        btnCardGithubSub: 'Add avatar to card',
         githubVerified: '✓ Verified',
         btnGithubLogout: 'Sign out',
         githubLoginRequired: '⚠️ GitHub sign-in required to share or join the ranking',
@@ -1698,9 +1717,10 @@ document.getElementById('dice_btn').addEventListener('click', () => {
 
 // ── カードスケール（レスポンシブ） ────────────────────
 function updateCardScale() {
-    const wrapper  = document.querySelector('.card-wrapper');
-    const card     = document.getElementById('card');
-    const btns     = document.querySelector('.action-btns');
+    const wrapper     = document.querySelector('.card-wrapper');
+    const card        = document.getElementById('card');
+    const btns        = document.querySelector('.action-btns');
+    const githubArea  = document.getElementById('card_github_area');
     const isMobile = window.innerWidth <= 760;
     // モバイルはドロワーが fixed になるので viewport 幅から余白を引いた値を使う
     const maxW = Math.min(640, isMobile ? window.innerWidth - 24 : window.innerWidth - 48);
@@ -1712,10 +1732,12 @@ function updateCardScale() {
         card.style.transformOrigin = 'top left';
         card.style.transform = `scale(${scale})`;
         btns.style.width = maxW + 'px';
+        if (githubArea) githubArea.style.width = maxW + 'px';
     } else {
         wrapper.style.width = wrapper.style.height = wrapper.style.overflow = '';
         card.style.transform = '';
         btns.style.width = '';
+        if (githubArea) githubArea.style.width = '';
     }
 }
 window.addEventListener('resize', updateCardScale);
