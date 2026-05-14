@@ -1276,20 +1276,13 @@ function render() {
     }
 
     // ② ジオラマ（透過PNG）
+    // 建物（左端）と滝（右端）が両方入るよう、横幅フィット配置
     if (imgs.diorama) {
         const dW = imgs.diorama.naturalWidth, dH = imgs.diorama.naturalHeight;
-        // W_W:W_H の比率に合わせてクロップ
-        const targetAspect = W_W / W_H;
-        const srcAspect = dW / dH;
-        let sx, sy, sw, sh;
-        if (srcAspect > targetAspect) {
-            sh = dH; sw = dH * targetAspect;
-            sx = (dW - sw) / 2; sy = 0;
-        } else {
-            sw = dW; sh = dW / targetAspect;
-            sx = 0; sy = (dH - sh) / 2;
-        }
-        ctx.drawImage(imgs.diorama, sx, sy, sw, sh, 0, 0, W_W, W_H);
+        const drawW = W_W;
+        const drawH = Math.round(dH * (W_W / dW));   // 縦は比率維持 ≈ 348px
+        const drawY = Math.round(W_H * 0.30);         // canvas高さの30%の位置から（武将の足元に合わせる）
+        ctx.drawImage(imgs.diorama, 0, 0, dW, dH, 0, drawY, drawW, drawH);
     }
 
     // ③ 武将（クロマキー＋クロップ）
