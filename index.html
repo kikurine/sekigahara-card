@@ -175,17 +175,17 @@
             bottom: 12px;
             right: 12px;
             z-index: 8;
-            font-family: 'Sawarabi Mincho', serif;
-            font-size: 0.78rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.62rem;
             color: #C9A84C;
             text-decoration: none;
-            letter-spacing: 0.15em;
-            border: 1px solid rgba(201,168,76,0.5);
-            padding: 4px 10px;
+            letter-spacing: 0.2em;
+            border: 1px solid rgba(201,168,76,0.45);
+            padding: 3px 8px;
             background: rgba(5,7,14,0.72);
             transition: color 0.2s, border-color 0.2s, background 0.2s;
         }
-        .ranking-badge-link:hover { color: #FFE082; border-color: rgba(201,168,76,0.85); background: rgba(5,7,14,0.88); }
+        .ranking-badge-link:hover { color: #FFE082; border-color: rgba(201,168,76,0.8); background: rgba(5,7,14,0.88); }
         .corner-tl { top: 16px; left: 16px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
         .corner-tr { top: 16px; right: 16px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); }
         .corner-bl { bottom: 16px; left: 16px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); }
@@ -708,9 +708,8 @@
             letter-spacing: 0.05em;
         }
         .card-verified-badge {
-            font-size: 0.68rem;
+            font-size: 0.75rem;
             color: #70B080;
-            letter-spacing: 0.05em;
             flex: 1;
         }
         .btn-card-logout {
@@ -988,7 +987,7 @@
             </div>
 
         </div>
-            <a href="ranking.html" target="_blank" class="ranking-badge-link" data-i18n="rankingBadge">⚔ ランキング</a>
+            <a href="ranking.html" target="_blank" class="ranking-badge-link">RANKING</a>
         </div><!-- /.card-wrapper -->
 
         <!-- カード直下：GitHubログイン（ログイン前）/ 認証済み表示（ログイン後） -->
@@ -1003,7 +1002,7 @@
             <div id="card_github_verified" class="card-github-verified" style="display:none">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="opacity:0.7"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                 <span id="card_github_id" class="card-github-id-text"></span>
-                <span class="card-verified-badge" data-i18n="githubVerified">✓ 本人確認済</span>
+                <span class="card-verified-badge">✓</span>
                 <button id="btn_github_logout" class="btn-card-logout" data-i18n="btnGithubLogout">ログアウト</button>
             </div>
         </div>
