@@ -170,6 +170,22 @@
             z-index: 6;
         }
         .corner { position: absolute; width: 18px; height: 18px; z-index: 7; opacity: 0.65; }
+        .ranking-badge-link {
+            position: absolute;
+            bottom: 10px;
+            right: 40px;
+            z-index: 8;
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 0.62rem;
+            color: rgba(154,123,26,0.65);
+            text-decoration: none;
+            letter-spacing: 0.15em;
+            border: 1px solid rgba(154,123,26,0.25);
+            padding: 3px 8px;
+            background: rgba(5,7,14,0.45);
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .ranking-badge-link:hover { color: rgba(201,168,76,0.95); border-color: rgba(154,123,26,0.55); }
         .corner-tl { top: 16px; left: 16px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
         .corner-tr { top: 16px; right: 16px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); }
         .corner-bl { bottom: 16px; left: 16px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); }
@@ -945,6 +961,7 @@
             <div class="corner corner-tr"></div>
             <div class="corner corner-bl"></div>
             <div class="corner corner-br"></div>
+            <a href="ranking.html" target="_blank" class="ranking-badge-link" data-i18n="rankingBadge">⚔ ランキング</a>
             <div class="side-label" id="card_side">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0;opacity:0.85"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                 <span id="card_side_text">github_id</span>
@@ -1513,7 +1530,7 @@ const LANG = {
         ex1: '9**99 → 9の99乗', ex2: '9**9**9 → さらに桁違い',
         ex3: '2**2**2**2**2 → 超天文学的な数', ex4: '9**9**99 → 軍勢を圧倒する規模',
         scoreLabel: 'スコア:', scoreSuffix: 'pt/字',
-        btnSubmit: '🏆 ランキングに登録', rankingLink: '▶ ランキングを確認する',
+        btnSubmit: '🏆 ランキングに登録', rankingLink: '▶ ランキングを確認する', rankingBadge: '⚔ ランキング',
         hint: 'コードで軍勢を増強せよ &nbsp;／&nbsp; スコア = 結果 ÷ 文字数',
         btnShare: 'い ざ 、 𝕏 で シ ェ ア ！',
         generating: '生 成 中 …', cardReady: '── 写しが完成いたした ──', btnDownload: '💾 ダ ウ ン ロ ー ド',
@@ -1555,7 +1572,7 @@ const LANG = {
         ex1: '9**99 → 9 to the 99th power', ex2: '9**9**9 → even larger',
         ex3: '2**2**2**2**2 → astronomical number', ex4: '9**9**99 → overwhelming scale',
         scoreLabel: 'Score:', scoreSuffix: 'pt/ch',
-        btnSubmit: '🏆 Join Ranking', rankingLink: '▶ View Ranking',
+        btnSubmit: '🏆 Join Ranking', rankingLink: '▶ View Ranking', rankingBadge: '⚔ Ranking',
         hint: 'Boost your army with code &nbsp;／&nbsp; Score = result ÷ chars',
         btnShare: 'S h a r e  o n  𝕏 ！',
         generating: 'Generating...', cardReady: '── Card ready ──', btnDownload: '💾 Download',
