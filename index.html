@@ -430,6 +430,7 @@
         .btn-main:disabled { opacity: 0.45; cursor: not-allowed; }
         #btn_generate { letter-spacing: 0.18em; }
         .btn-share-in-drawer { width: 100%; margin-top: 16px; white-space: nowrap; font-size: 0.88rem; }
+        .btn-dl-pc { white-space: nowrap; }
         #download_area { display: none; text-align: center; }
         #download_area p { margin-bottom: 8px; color: #7A6840; font-size: 0.85rem; letter-spacing: 0.15em; }
         .dl-btns { display: flex; gap: 10px; margin-top: 10px; }
@@ -763,6 +764,7 @@
             .action-btns {
                 width: 100% !important;
             }
+            .btn-dl-pc { display: none; }
 
             /* ── ボトムドロワー ── */
             .controls {
@@ -1008,6 +1010,7 @@
         </div>
 
         <div class="action-btns">
+            <button class="btn-main btn-dl-pc" id="btn_dl_pc" data-i18n="btnDlPc">💾 カ ー ド を ダ ウ ン ロ ー ド</button>
             <div id="download_area">
                 <p data-i18n="cardReady">── 写しが完成いたした ──</p>
                 <img id="final_image" style="width:100%; border:1px solid #3A3020;">
@@ -1482,6 +1485,25 @@ function buildExportCanvas() {
     return ec;
 }
 
+// PC 専用ダウンロードボタン（シェアなし）
+document.getElementById('btn_dl_pc').addEventListener('click', () => {
+    const btn = document.getElementById('btn_dl_pc');
+    btn.disabled = true; btn.textContent = t('generating');
+    htmlToImage.toPng(document.getElementById('card'), { pixelRatio: 2.5, cacheBust: true })
+        .then(dataUrl => {
+            document.getElementById('final_image').src = dataUrl;
+            const dl = document.getElementById('btn_download');
+            dl.href = dataUrl;
+            document.getElementById('download_area').style.display = 'block';
+            // 自動ダウンロード
+            const a = document.createElement('a');
+            a.href = dataUrl; a.download = 'busho_card.png'; a.click();
+        })
+        .finally(() => {
+            btn.disabled = false; btn.textContent = t('btnDlPc');
+        });
+});
+
 document.getElementById('btn_generate').addEventListener('click', () => {
     const btn = document.getElementById('btn_generate');
     btn.disabled = true; btn.textContent = t('generating');
@@ -1532,7 +1554,7 @@ const LANG = {
         btnSubmit: '🏆 ランキングに登録', rankingLink: '▶ ランキングを確認する', rankingBadge: '⚔ ランキング',
         hint: 'コードで軍勢を増強せよ &nbsp;／&nbsp; スコア = 結果 ÷ 文字数',
         btnShare: 'い ざ 、 𝕏 で シ ェ ア ！',
-        generating: '生 成 中 …', cardReady: '── 写しが完成いたした ──', btnDownload: '💾 ダ ウ ン ロ ー ド',
+        generating: '生 成 中 …', cardReady: '── 写しが完成いたした ──', btnDownload: '💾 ダ ウ ン ロ ー ド', btnDlPc: '💾 カ ー ド を ダ ウ ン ロ ー ド',
         cardSideWest: '西軍', cardSideEast: '東軍',
         warcryOpen: '「', warcryClose: '」',
         statusNeutral: '東西拮抗', statusWest: '西軍優勢', statusEast: '東軍優勢',
@@ -1574,7 +1596,7 @@ const LANG = {
         btnSubmit: '🏆 Join Ranking', rankingLink: '▶ View Ranking', rankingBadge: '⚔ Ranking',
         hint: 'Boost your army with code &nbsp;／&nbsp; Score = result ÷ chars',
         btnShare: 'S h a r e  o n  𝕏 ！',
-        generating: 'Generating...', cardReady: '── Card ready ──', btnDownload: '💾 Download',
+        generating: 'Generating...', cardReady: '── Card ready ──', btnDownload: '💾 Download', btnDlPc: '💾 Download Card',
         cardSideWest: 'West', cardSideEast: 'East',
         warcryOpen: '“', warcryClose: '”',
         statusNeutral: 'Balanced', statusWest: 'West Leads', statusEast: 'East Leads',
