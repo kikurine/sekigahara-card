@@ -236,7 +236,7 @@
             <tr>
                 <th style="text-align:center">順位</th>
                 <th>武将名</th>
-                <th>コード</th>
+                <th>文字数</th>
                 <th style="text-align:right">結果の桁数</th>
                 <th style="text-align:right">スコア (対数)</th>
             </tr>
@@ -305,7 +305,7 @@
                     <td class="entry-name">
                         ${e.name}<span class="entry-side ${sideClass}">${sideLabel}</span>
                     </td>
-                    <td><span class="entry-code">${escHtml(e.code)}</span></td>
+                    <td><span class="entry-code">${e.codeLen}文字</span></td>
                     <td class="entry-digits">${e.resultDigits}桁</td>
                     <td class="entry-score">${scoreDisp}</td>
                 </tr>`;
