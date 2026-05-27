@@ -30,7 +30,7 @@
           newData.child('codeLen').val() <= 200 &&
           newData.child('resultDigits').isNumber() &&
           newData.child('resultDigits').val() >= 1 &&
-          newData.child('resultDigits').val() <= 100000 &&
+          newData.child('resultDigits').val() <= 999999999 &&
           newData.child('scoreLog').isNumber() &&
           newData.child('scoreLog').val() >= 0 &&
           newData.child('scoreLog').val() <= newData.child('resultDigits').val() &&

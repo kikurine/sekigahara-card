@@ -1563,7 +1563,7 @@ const LANG = {
         flashWestTurn: '⚡ 西軍、逆転！', flashEastTurn: '⚡ 東軍、逆転！',
         flashWestGain: '西軍が勢力を拡大！', flashEastGain: '東軍が追い上げる！',
         loading: '⏳ ruby.wasm を召喚中… (初回のみ数秒かかります)',
-        running: '▶ 実行中...', mustReturnInt: '※正の整数を返すコードを書いてください', overLimit: '桁数が上限(100,000桁)を超えているため登録できません',
+        running: '▶ 実行中...', mustReturnInt: '※正の整数を返すコードを書いてください',
         digits: (n) => `${n}桁`,
         errPrefix: 'エラー: ', registering: '登録中...',
         registered: (r) => `✅ 登録！ 現在 ${r}位`,
@@ -1605,7 +1605,7 @@ const LANG = {
         flashWestTurn: '⚡ West takes the lead!', flashEastTurn: '⚡ East takes the lead!',
         flashWestGain: 'West is gaining ground!', flashEastGain: 'East is catching up!',
         loading: '⏳ Loading ruby.wasm... (first time only, takes a few seconds)',
-        running: '▶ Running...', mustReturnInt: '※ Please write code that returns a positive integer', overLimit: 'Result exceeds 100,000 digits — cannot submit to ranking',
+        running: '▶ Running...', mustReturnInt: '※ Please write code that returns a positive integer',
         digits: (n) => `${n} digits`,
         errPrefix: 'Error: ', registering: 'Registering...',
         registered: (r) => `✅ Registered! Rank #${r}`,
@@ -1966,7 +1966,6 @@ function loadRubyVM() {
 }
 
 const SCORE_BIGINT_LIMIT = 50000; // これ以上はBigInt変換をスキップ（ブラウザクラッシュ防止）
-const SCORE_SUBMIT_LIMIT = 100000; // Firebaseルールの上限
 
 function calcScore(resultStr, codeLen) {
     // 結果の桁数とコード長からスコアを計算
@@ -1985,10 +1984,17 @@ function calcScore(resultStr, codeLen) {
     } catch { return null; }
 }
 
-function fmtScore(scoreStr) {
-    if (!scoreStr) return '-';
-    if (scoreStr.length <= 12) return Number(scoreStr).toLocaleString();
-    return scoreStr.slice(0, 4) + '...' + `(${scoreStr.length}桁)`;
+function fmtScore(scoreStr, scoreLog) {
+    if (scoreStr) {
+        if (scoreStr.length <= 12) return Number(scoreStr).toLocaleString();
+        return scoreStr.slice(0, 4) + '...' + `(${scoreStr.length}桁)`;
+    }
+    // BigInt変換をスキップした場合は対数スコアから近似表示
+    if (scoreLog != null) {
+        const exp = Math.round(scoreLog);
+        return `≈ 10^${exp.toLocaleString()}`;
+    }
+    return '-';
 }
 
 let _lastScore = null;
@@ -2056,10 +2062,9 @@ document.getElementById('btn_ruby_run').addEventListener('click', async () => {
         const digitsDisp = resultStr.length > 30
             ? resultStr.slice(0, 20) + '…(' + t('digits')(resultStr.length) + ')'
             : resultStr;
-        const overLimit = resultStr.length > SCORE_SUBMIT_LIMIT;
-        output.textContent = `=> ${digitsDisp}${overLimit ? '　⚠️ ' + t('overLimit') : ''}`;
-        document.getElementById('ruby_score_val').textContent = fmtScore(score.scoreStr);
-        scoreArea.style.display = overLimit ? 'none' : 'block';
+        output.textContent = `=> ${digitsDisp}`;
+        document.getElementById('ruby_score_val').textContent = fmtScore(score.scoreStr, score.scoreLog);
+        scoreArea.style.display = 'block';
         _lastScore = { code: normalized, resultStr, ...score };
     } catch (e) {
         console.error('ruby.wasm error:', e);
