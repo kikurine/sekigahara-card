@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>関ヶ原Ruby会議 算法合戦ランキング</title>
     <link href="https://fonts.googleapis.com/css2?family=Yuji+Mai&family=Sawarabi+Mincho&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -252,20 +250,17 @@
     <div class="back-link"><a href="index.html">← 戻る</a></div>
 
     <script>
-        firebase.initializeApp({
-            apiKey:            "AIzaSyAZw-gCUn6-14D6iK2qesUm7NLRGSm0e_s",
-            authDomain:        "sekigahara-card.firebaseapp.com",
-            databaseURL:       "https://sekigahara-card-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId:         "sekigahara-card",
-            storageBucket:     "sekigahara-card.firebasestorage.app",
-            messagingSenderId: "206009048073",
-            appId:             "1:206009048073:web:f164c33f3624511541acd8"
-        });
-        const db = firebase.database();
+        const DB_URL = 'https://sekigahara-card-default-rtdb.asia-southeast1.firebasedatabase.app';
 
-        db.ref('scores').on('value', snap => {
-            const entries = [];
-            snap.forEach(child => entries.push(child.val()));
+        function loadRanking() {
+            fetch(DB_URL + '/scores.json')
+                .then(r => r.json())
+                .then(data => render(data))
+                .catch(err => console.error('fetch error', err));
+        }
+
+        function render(data) {
+            const entries = data ? Object.values(data) : [];
 
             // 勢力メーター更新
             let westTotal = 0, eastTotal = 0;
@@ -313,11 +308,11 @@
                     <td class="entry-score">${scoreDisp}</td>
                 </tr>`;
             }).join('');
-        });
-
-        function escHtml(s) {
-            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         }
+
+        // 初回 + 10秒ごとに更新
+        loadRanking();
+        setInterval(loadRanking, 10000);
     </script>
 </body>
 </html>
