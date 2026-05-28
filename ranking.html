@@ -263,7 +263,7 @@
         });
         const db = firebase.database();
 
-        db.ref('scores').orderByChild('scoreLog').limitToLast(50).on('value', snap => {
+        db.ref('scores').on('value', snap => {
             const entries = [];
             snap.forEach(child => entries.push(child.val()));
 
